@@ -1,6 +1,7 @@
 package dev.doctor4t.trainmurdermystery.game;
 
 import com.google.common.collect.Lists;
+import dev.doctor4t.trainmurdermystery.TMM;
 import dev.doctor4t.trainmurdermystery.cca.PlayerMoodComponent;
 import dev.doctor4t.trainmurdermystery.cca.TMMComponents;
 import dev.doctor4t.trainmurdermystery.cca.WorldGameComponent;
@@ -122,12 +123,12 @@ public class TMMGameLoop {
                 }
 
                 // win display
-                if (winStatus != WinStatus.NONE && gameComponent.getFadeOut() < 0) {
-                    for (ServerPlayerEntity player : serverWorld.getPlayers()) {
-                        player.sendMessage(Text.translatable("game.win." + winStatus.name().toLowerCase(Locale.ROOT)), true);
-                    }
-                    stopGame(serverWorld);
-                }
+//                if (winStatus != WinStatus.NONE && gameComponent.getFadeOut() < 0) {
+//                    for (ServerPlayerEntity player : serverWorld.getPlayers()) {
+//                        player.sendMessage(Text.translatable("game.win." + winStatus.name().toLowerCase(Locale.ROOT)), true);
+//                    }
+//                    stopGame(serverWorld);
+//                }
             }
         }
     }
@@ -166,11 +167,17 @@ public class TMMGameLoop {
     }
 
     public static void startGame(ServerWorld world) {
-        TMMComponents.GAME.get(world).setFadeIn(0);
+        WorldGameComponent component = TMMComponents.GAME.get(world);
+        component.setRunning(false);
+        component.setFadeIn(0);
+        component.setFadeOut(-1);
     }
 
     public static void stopGame(ServerWorld world) {
-        TMMComponents.GAME.get(world).setFadeOut(0);
+        WorldGameComponent component = TMMComponents.GAME.get(world);
+        component.setRunning(true);
+        component.setFadeOut(0);
+        TMMComponents.GAME.get(world).setFadeIn(-1);
     }
 
     public static void initializeGame(ServerWorld world) {

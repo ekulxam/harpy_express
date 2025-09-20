@@ -43,11 +43,11 @@ public interface TMMGameConstants {
                     new Box(127, 121, -539, 147, 125, -533)
             ), "Library")
     ));
-    float MOOD_DRAIN = 1f / getInTicks(30, 0);
-    float MOOD_GAIN = 1f / getInTicks(1, 0);
-    int MIN_PREFERENCE_COOLDOWN = getInTicks(2, 30);
-    int MAX_PREFERENCE_COOLDOWN = getInTicks(3, 30);
-    int TIME_TO_FIRST_TASK = getInTicks(3, 0);
+    float MOOD_DRAIN = 1f / getInTicks(1, 0);
+    float MOOD_GAIN = 1f / getInTicks(0, 15);
+    int MIN_PREFERENCE_COOLDOWN = getInTicks(0, 30);
+    int MAX_PREFERENCE_COOLDOWN = getInTicks(0, 30);
+    int TIME_TO_FIRST_TASK = getInTicks(0, 0);
 
     static int getInTicks(int minutes, int seconds) {
         return (minutes * 60 + seconds) * 20;

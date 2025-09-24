@@ -37,6 +37,8 @@ public class GameWorldComponent implements AutoSyncedComponent, ClientTickingCom
 
     private int ticksUntilNextResetAttempt = -1;
 
+    private int psychosActive = 0;
+
     public GameWorldComponent(World world) {
         this.world = world;
     }
@@ -106,10 +108,24 @@ public class GameWorldComponent implements AutoSyncedComponent, ClientTickingCom
 
     public void resetHitmanList() {
         setHitmen(new ArrayList<>());
+        setPsychosActive(0);
     }
 
     public void queueTrainReset() {
         ticksUntilNextResetAttempt = 20;
+    }
+
+    public int getPsychosActive() {
+        return psychosActive;
+    }
+
+    public boolean isPsychoActive() {
+        return psychosActive > 0;
+    }
+
+    public void setPsychosActive(int psychosActive) {
+        this.psychosActive = Math.max(0, psychosActive);
+        this.sync();
     }
 
     @Override
@@ -118,6 +134,7 @@ public class GameWorldComponent implements AutoSyncedComponent, ClientTickingCom
 
         this.setFade(nbtCompound.getInt("Fade"));
         this.setKillsLeft(nbtCompound.getInt("KillsLeft"));
+        this.setPsychosActive(nbtCompound.getInt("PsychosActive"));
 
         this.setHitmen(uuidListFromNbt(nbtCompound, "Hitmen"));
     }
@@ -136,6 +153,7 @@ public class GameWorldComponent implements AutoSyncedComponent, ClientTickingCom
 
         nbtCompound.putInt("Fade", fade);
         nbtCompound.putInt("KillsLeft", killsLeft);
+        nbtCompound.putInt("PsychosActive", psychosActive);
 
         nbtCompound.put("Hitmen", nbtFromUuidList(getHitmen()));
     }

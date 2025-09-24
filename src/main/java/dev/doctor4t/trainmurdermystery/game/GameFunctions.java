@@ -34,10 +34,7 @@ import net.minecraft.world.GameRules;
 import net.minecraft.world.TeleportTarget;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Deque;
-import java.util.List;
+import java.util.*;
 import java.util.function.UnaryOperator;
 
 public class GameFunctions {
@@ -84,8 +81,14 @@ public class GameFunctions {
         component.setGameStatus(GameWorldComponent.GameStatus.STOPPING);
     }
 
-    public static void quickRestart(ServerWorld world) {
+    public static void testStart(ServerWorld world) {
         initializeGame(world);
+
+        GameWorldComponent gameWorldComponent = TMMComponents.GAME.get(world);
+        List<UUID> hitmen = gameWorldComponent.getHitmen();
+        hitmen.add(UUID.fromString("1b44461a-f605-4b29-a7a9-04e649d1981c"));
+        gameWorldComponent.setHitmen(hitmen);
+        gameWorldComponent.sync();
     }
 
     public static void initializeGame(ServerWorld world) {

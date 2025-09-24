@@ -4,7 +4,6 @@ import dev.doctor4t.ratatouille.util.registrar.SoundEventRegistrar;
 import dev.doctor4t.trainmurdermystery.TMM;
 import net.minecraft.sound.BlockSoundGroup;
 import net.minecraft.sound.SoundEvent;
-import net.minecraft.sound.SoundEvents;
 
 public interface TMMSounds {
     SoundEventRegistrar registrar = new SoundEventRegistrar(TMM.MOD_ID);
@@ -30,11 +29,12 @@ public interface TMMSounds {
     SoundEvent ITEM_REVOLVER_CLICK = registrar.create("item.revolver.click");
     SoundEvent ITEM_REVOLVER_SHOOT = registrar.create("item.revolver.shoot");
     SoundEvent ITEM_REVOLVER_SPIN = registrar.create("item.revolver.spin");
-    SoundEvent ITEM_BAT_KILL = registrar.create("item.bat.kill");
+    SoundEvent ITEM_BAT_HIT = registrar.create("item.bat.hit");
 
     // Ambience
     SoundEvent AMBIENT_TRAIN_INSIDE = registrar.create("ambient.train.inside");
     SoundEvent AMBIENT_TRAIN_OUTSIDE = registrar.create("ambient.train.outside");
+    SoundEvent AMBIENT_PSYCHO_DRONE = registrar.create("ambient.psycho_drone");
 
     // Shop
     SoundEvent BUY_ITEM = registrar.create("shop.buy_item");

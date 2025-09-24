@@ -282,6 +282,15 @@
 		],
 		"subtitle": "subtitles.item.revolver.spin"
 	},
+	"item.bat.hit": {
+		"sounds": [
+			"trainmurdermystery:item/bat_hit_1",
+			"trainmurdermystery:item/bat_hit_2",
+			"trainmurdermystery:item/bat_hit_3",
+			"trainmurdermystery:item/bat_hit_4"
+		],
+		"subtitle": "subtitles.item.bat.hit"
+	},
 
 	"ambient.train.inside": {
 		"sounds": [
@@ -294,5 +303,11 @@
 			"trainmurdermystery:ambient/train_outside"
 		],
 		"subtitle": "subtitles.ambient.train.outside"
+	},
+	"ambient.psycho_drone": {
+		"sounds": [
+			"trainmurdermystery:ambient/psycho_drone"
+		],
+		"subtitle": "subtitles.ambient.psycho_drone"
 	}
 }

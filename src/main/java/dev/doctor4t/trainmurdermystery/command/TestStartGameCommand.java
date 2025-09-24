@@ -5,13 +5,13 @@ import dev.doctor4t.trainmurdermystery.game.GameFunctions;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 
-public class ForceStartGameCommand {
+public class TestStartGameCommand {
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         dispatcher.register(
-                CommandManager.literal("tmm:forceStart")
+                CommandManager.literal("tmm:testStart")
                         .requires(source -> source.hasPermissionLevel(2))
                         .executes(context -> {
-                                    GameFunctions.quickRestart(context.getSource().getWorld());
+                                    GameFunctions.testStart(context.getSource().getWorld());
                                     return 1;
                                 }
                         )

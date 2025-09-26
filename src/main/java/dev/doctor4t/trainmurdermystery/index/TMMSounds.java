@@ -31,11 +31,14 @@ public interface TMMSounds {
     SoundEvent ITEM_REVOLVER_SPIN = registrar.create("item.revolver.spin");
     SoundEvent ITEM_BAT_HIT = registrar.create("item.bat.hit");
     SoundEvent ITEM_CROWBAR_PRY = registrar.create("item.crowbar.pry");
+    SoundEvent ITEM_GRENADE_THROW = registrar.create("item.grenade.throw");
+    SoundEvent ITEM_GRENADE_EXPLODE = registrar.create("item.grenade.explode");
 
     // Ambience
     SoundEvent AMBIENT_TRAIN_INSIDE = registrar.create("ambient.train.inside");
     SoundEvent AMBIENT_TRAIN_OUTSIDE = registrar.create("ambient.train.outside");
     SoundEvent AMBIENT_PSYCHO_DRONE = registrar.create("ambient.psycho_drone");
+    SoundEvent AMBIENT_TRAIN_HORN = registrar.create("ambient.train.horn");
 
     // Shop
     SoundEvent BUY_ITEM = registrar.create("shop.buy_item");

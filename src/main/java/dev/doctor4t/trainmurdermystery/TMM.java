@@ -142,3 +142,6 @@ public class TMM implements ModInitializer {
 // TORECORD: Players collide with each other (Amy) + let's you step on them
 // TODO: Louder footsteps
 // TORECORD: System that remembers previous roles and allows cycling of roles (Amy)
+
+// TODO:
+// - Item shop sounds

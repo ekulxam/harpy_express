@@ -1,17 +1,19 @@
 package dev.doctor4t.trainmurdermystery.entity;
 
+import dev.doctor4t.trainmurdermystery.cca.TMMComponents;
+import dev.doctor4t.trainmurdermystery.game.GameFunctions;
 import dev.doctor4t.trainmurdermystery.index.TMMEntities;
 import dev.doctor4t.trainmurdermystery.index.TMMItems;
-import net.minecraft.entity.Entity;
+import dev.doctor4t.trainmurdermystery.index.TMMParticles;
+import dev.doctor4t.trainmurdermystery.index.TMMSounds;
 import net.minecraft.entity.EntityType;
-import net.minecraft.entity.mob.BlazeEntity;
 import net.minecraft.entity.projectile.thrown.ThrownItemEntity;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
 import net.minecraft.particle.ItemStackParticleEffect;
-import net.minecraft.particle.ParticleEffect;
 import net.minecraft.particle.ParticleTypes;
-import net.minecraft.util.hit.EntityHitResult;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.sound.SoundCategory;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.world.World;
 
@@ -21,38 +23,25 @@ public class GrenadeEntity extends ThrownItemEntity {
     }
 
     protected Item getDefaultItem() {
-        return TMMItems.GRENADE;
-    }
-
-    private ParticleEffect getParticleParameters() {
-        ItemStack itemStack = this.getStack();
-        return !itemStack.isEmpty() && !itemStack.isOf(this.getDefaultItem()) ? new ItemStackParticleEffect(ParticleTypes.ITEM, itemStack) : ParticleTypes.ITEM_SNOWBALL;
-    }
-
-    public void handleStatus(byte status) {
-        if (status == 3) {
-            ParticleEffect particleEffect = this.getParticleParameters();
-
-            for(int i = 0; i < 8; ++i) {
-                this.getWorld().addParticle(particleEffect, this.getX(), this.getY(), this.getZ(), 0.0F, 0.0F, 0.0F);
-            }
-        }
-
-    }
-
-    protected void onEntityHit(EntityHitResult entityHitResult) {
-        super.onEntityHit(entityHitResult);
-        Entity entity = entityHitResult.getEntity();
-        int i = entity instanceof BlazeEntity ? 3 : 0;
-        entity.damage(this.getDamageSources().thrown(this, this.getOwner()), (float)i);
+        return TMMItems.THROWN_GRENADE;
     }
 
     protected void onCollision(HitResult hitResult) {
         super.onCollision(hitResult);
         if (!this.getWorld().isClient) {
-            this.getWorld().sendEntityStatus(this, (byte)3);
+            ServerWorld world = (ServerWorld) this.getWorld();
+            world.playSound(null, this.getBlockPos(), TMMSounds.ITEM_GRENADE_EXPLODE, SoundCategory.PLAYERS, 5f, 1f + this.getRandom().nextFloat() * .1f - .05f);
+            world.spawnParticles(TMMParticles.BIG_EXPLOSION, this.getX(), this.getY() + .1f, this.getZ(), 1, 0, 0, 0, 0);
+            world.spawnParticles(ParticleTypes.SMOKE, this.getX(), this.getY() + .1f, this.getZ(), 100, 0, 0, 0, .2f);
+            world.spawnParticles(new ItemStackParticleEffect(ParticleTypes.ITEM, getDefaultItem().getDefaultStack()), this.getX(), this.getY() + .1f, this.getZ(), 100, 0, 0, 0, 1f);
+
+            for (ServerPlayerEntity player : world.getPlayers(serverPlayerEntity -> {
+                return !this.getOwner().equals(serverPlayerEntity) && this.getBoundingBox().expand(5f).contains(serverPlayerEntity.getPos()) && !TMMComponents.GAME.get(world).isHitman(serverPlayerEntity) && GameFunctions.isPlayerAliveAndSurvival(serverPlayerEntity);
+            })) {
+                GameFunctions.killPlayer(player, true);
+            }
+
             this.discard();
         }
-
     }
 }

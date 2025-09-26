@@ -27,12 +27,13 @@ public @SuppressWarnings("unchecked") interface TMMItems {
     Item BAT = registrar.create("bat", new BatItem(new Item.Settings().maxCount(1).attributeModifiers(AxeItem.createAttributeModifiers(ToolMaterials.WOOD, 0.0F, -3.0F))), EQUIPMENT_GROUP);
     Item CROWBAR = registrar.create("crowbar", new CrowbarItem(new Item.Settings().maxCount(1)), EQUIPMENT_GROUP);
     Item GRENADE = registrar.create("grenade", new GrenadeItem(new Item.Settings().maxCount(1)), EQUIPMENT_GROUP);
+    Item THROWN_GRENADE = registrar.create("thrown_grenade", new GrenadeItem(new Item.Settings().maxCount(1)));
     Item FIRECRACKER = registrar.create("firecracker", new FirecrackerItem(new Item.Settings().maxCount(1)), EQUIPMENT_GROUP);
     Item REVOLVER = registrar.create("revolver", new RevolverItem(new Item.Settings().maxCount(1)), EQUIPMENT_GROUP);
     Item BODY_BAG = registrar.create("body_bag", new BodyBagItem(new Item.Settings().maxCount(1)), EQUIPMENT_GROUP);
     Item LETTER = registrar.create("letter", new Item(new Item.Settings().maxCount(1)), EQUIPMENT_GROUP);
-    Item BLACKOUT = registrar.create("blackout", new Item(new Item.Settings().maxCount(1)), EQUIPMENT_GROUP);
-    Item PSYCHO_MODE = registrar.create("psycho_mode", new Item(new Item.Settings().maxCount(1)), EQUIPMENT_GROUP);
+    Item BLACKOUT = registrar.create("blackout", new Item(new Item.Settings().maxCount(1)));
+    Item PSYCHO_MODE = registrar.create("psycho_mode", new Item(new Item.Settings().maxCount(1)));
     Item POISON_VIAL = registrar.create("poison_vial", new Item(new Item.Settings().maxCount(1)), EQUIPMENT_GROUP);
     Item SCORPION = registrar.create("scorpion", new Item(new Item.Settings().maxCount(1)), EQUIPMENT_GROUP);
     Item OLD_FASHIONED = registrar.create("old_fashioned", new CocktailItem(new Item.Settings().maxCount(1).food(FoodComponents.HONEY_BOTTLE)), EQUIPMENT_GROUP);

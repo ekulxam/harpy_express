@@ -15,6 +15,7 @@ public interface TMMParticles {
     SimpleParticleType SNOWFLAKE = (SimpleParticleType) registrar.create("snowflake", FabricParticleTypes.simple(true));
     SimpleParticleType GUNSHOT = (SimpleParticleType) registrar.create("gunshot", FabricParticleTypes.simple(true));
     SimpleParticleType EXPLOSION = (SimpleParticleType) registrar.create("explosion", FabricParticleTypes.simple(true));
+    SimpleParticleType BIG_EXPLOSION = (SimpleParticleType) registrar.create("big_explosion", FabricParticleTypes.simple(true));
     SimpleParticleType POISON = (SimpleParticleType) registrar.create("poison", FabricParticleTypes.simple(true));
 
     static void initialize() {
@@ -25,6 +26,7 @@ public interface TMMParticles {
         ParticleFactoryRegistry.getInstance().register(SNOWFLAKE, SnowflakeParticle.Factory::new);
         ParticleFactoryRegistry.getInstance().register(GUNSHOT, FlashParticle.GunshotFactory::new);
         ParticleFactoryRegistry.getInstance().register(EXPLOSION, FlashParticle.ExplosionFactory::new);
+        ParticleFactoryRegistry.getInstance().register(BIG_EXPLOSION, FlashParticle.BigExplosionFactory::new);
         ParticleFactoryRegistry.getInstance().register(POISON, PoisonParticle.Factory::new);
     }
 }

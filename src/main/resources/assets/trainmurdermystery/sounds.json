@@ -297,6 +297,18 @@
 		],
 		"subtitle": "subtitles.item.crowbar.pry"
 	},
+	"item.grenade.throw": {
+		"sounds": [
+			"trainmurdermystery:item/grenade_throw"
+		],
+		"subtitle": "subtitles.item.grenade.throw"
+	},
+	"item.grenade.explode": {
+		"sounds": [
+			"trainmurdermystery:item/grenade_explode"
+		],
+		"subtitle": "subtitles.item.grenade.explode"
+	},
 
 	"ambient.train.inside": {
 		"sounds": [
@@ -309,6 +321,12 @@
 			"trainmurdermystery:ambient/train_outside"
 		],
 		"subtitle": "subtitles.ambient.train.outside"
+	},
+	"ambient.train.horn": {
+		"sounds": [
+			"trainmurdermystery:ambient/train_horn"
+		],
+		"subtitle": "subtitles.ambient.train.horn"
 	},
 	"ambient.psycho_drone": {
 		"sounds": [

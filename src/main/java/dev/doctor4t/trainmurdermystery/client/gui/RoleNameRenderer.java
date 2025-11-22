@@ -26,10 +26,11 @@ public class RoleNameRenderer {
     private static Text nametag = Text.empty();
     private static final Text[] note = new Text[]{Text.empty(), Text.empty(), Text.empty(), Text.empty()};
 
+    // TODO: fix after vars
     public static void renderHud(TextRenderer renderer, @NotNull ClientPlayerEntity player, DrawContext context, RenderTickCounter tickCounter) {
-        var component = GameWorldComponent.KEY.get(player.getWorld());
+        GameWorldComponent component = GameWorldComponent.KEY.get(player.getWorld());
         if (player.getWorld().getLightLevel(LightType.BLOCK, BlockPos.ofFloored(player.getEyePos())) < 3 && player.getWorld().getLightLevel(LightType.SKY, BlockPos.ofFloored(player.getEyePos())) < 10) return;
-        var range = GameFunctions.isPlayerSpectatingOrCreative(player) ? 8f : 2f;
+        float range = GameFunctions.isPlayerSpectatingOrCreative(player) ? 8f : 2f;
         if (ProjectileUtil.getCollision(player, entity -> entity instanceof PlayerEntity, range) instanceof EntityHitResult entityHitResult && entityHitResult.getEntity() instanceof PlayerEntity target) {
             nametagAlpha = MathHelper.lerp(tickCounter.getTickDelta(true) / 4, nametagAlpha, 1f);
             nametag = target.getDisplayName();
@@ -38,7 +39,7 @@ public class RoleNameRenderer {
             } else {
                 targetRole = TrainRole.BYSTANDER;
             }
-            var shouldObfuscate = PlayerPsychoComponent.KEY.get(target).getPsychoTicks() > 0;
+            boolean shouldObfuscate = PlayerPsychoComponent.KEY.get(target).getPsychoTicks() > 0;
             nametag = shouldObfuscate ? Text.literal("urscrewed" + "X".repeat(player.getRandom().nextInt(8))).styled(style -> style.withFormatting(Formatting.OBFUSCATED, Formatting.DARK_RED)) : nametag;
         } else {
             nametagAlpha = MathHelper.lerp(tickCounter.getTickDelta(true) / 4, nametagAlpha, 0f);
@@ -47,15 +48,15 @@ public class RoleNameRenderer {
             context.getMatrices().push();
             context.getMatrices().translate(context.getScaledWindowWidth() / 2f, context.getScaledWindowHeight() / 2f + 6, 0);
             context.getMatrices().scale(0.6f, 0.6f, 1f);
-            var nameWidth = renderer.getWidth(nametag);
+            int nameWidth = renderer.getWidth(nametag);
             context.drawTextWithShadow(renderer, nametag, -nameWidth / 2, 16, MathHelper.packRgb(1f, 1f, 1f) | ((int) (nametagAlpha * 255) << 24));
             if (component.isRunning()) {
-                var playerRole = TrainRole.BYSTANDER;
+                TrainRole playerRole = TrainRole.BYSTANDER;
                 if (component.isRole(player, TMMRoles.KILLER)) playerRole = TrainRole.KILLER;
                 if (playerRole == TrainRole.KILLER && targetRole == TrainRole.KILLER) {
                     context.getMatrices().translate(0, 20 + renderer.fontHeight, 0);
-                    var roleText = Text.translatable("game.tip.cohort");
-                    var roleWidth = renderer.getWidth(roleText);
+                    Text roleText = Text.translatable("game.tip.cohort");
+                    int roleWidth = renderer.getWidth(roleText);
                     context.drawTextWithShadow(renderer, roleText, -roleWidth / 2, 0, MathHelper.packRgb(1f, 0f, 0f) | ((int) (nametagAlpha * 255) << 24));
                 }
             }
@@ -75,9 +76,9 @@ public class RoleNameRenderer {
             context.getMatrices().push();
             context.getMatrices().translate(context.getScaledWindowWidth() / 2f, context.getScaledWindowHeight() / 2f + 6, 0);
             context.getMatrices().scale(0.6f, 0.6f, 1f);
-            for (var i = 0; i < note.length; i++) {
-                var line = note[i];
-                var lineWidth = renderer.getWidth(line);
+            for (int i = 0; i < note.length; i++) {
+                Text line = note[i];
+                int lineWidth = renderer.getWidth(line);
                 context.drawTextWithShadow(renderer, line, -lineWidth / 2, 16 + (i * (renderer.fontHeight + 2)), MathHelper.packRgb(1f, 1f, 1f) | ((int) (noteAlpha * 255) << 24));
             }
             context.getMatrices().pop();

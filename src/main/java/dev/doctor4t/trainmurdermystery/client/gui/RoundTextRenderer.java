@@ -17,9 +17,12 @@ import net.minecraft.client.network.PlayerListEntry;
 import net.minecraft.client.option.GameOptions;
 import net.minecraft.client.util.SkinTextures;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
@@ -76,9 +79,11 @@ public class RoundTextRenderer {
         if (endTime > 0 && endTime < END_DURATION - (GameConstants.FADE_TIME * 2) && !game.isRunning() && game.getGameMode() != GameWorldComponent.GameMode.DISCOVERY) {
             GameRoundEndComponent roundEnd = GameRoundEndComponent.KEY.get(player.getWorld());
             if (roundEnd.getWinStatus() == GameFunctions.WinStatus.NONE) return;
-            var winner = player.getWorld().getPlayerByUuid(game.getLooseEndWinner() == null ? UUID.randomUUID() : game.getLooseEndWinner());
-            var endText = role.getEndText(roundEnd.getWinStatus(), winner == null ? Text.empty() : winner.getDisplayName());
-            if (endText == null) return;
+            PlayerEntity winner = player.getWorld().getPlayerByUuid(game.getLooseEndWinner() == null ? UUID.randomUUID() : game.getLooseEndWinner());
+            Text endText = role.getEndText(roundEnd.getWinStatus(), winner == null ? Text.empty() : winner.getDisplayName());
+            if (endText == null) {
+                return;
+            }
             matrices.push();
             matrices.translate(context.getScaledWindowWidth() / 2f, context.getScaledWindowHeight() / 2f - 40, 0);
             matrices.push();
@@ -87,23 +92,23 @@ public class RoundTextRenderer {
             matrices.pop();
             matrices.push();
             matrices.scale(1.2f, 1.2f, 1f);
-            var winMessage = Text.translatable("game.win." + roundEnd.getWinStatus().name().toLowerCase().toLowerCase());
+            MutableText winMessage = Text.translatable("game.win." + roundEnd.getWinStatus().name().toLowerCase().toLowerCase());
             context.drawTextWithShadow(renderer, winMessage, -renderer.getWidth(winMessage) / 2, -4, 0xFFFFFF);
             matrices.pop();
             if (isLooseEnds) {
                 context.drawTextWithShadow(renderer, RoleAnnouncementTexts.LOOSE_END.titleText, -renderer.getWidth(RoleAnnouncementTexts.LOOSE_END.titleText) / 2, 14, 0xFFFFFF);
-                var looseEnds = 0;
-                for (var entry : roundEnd.getPlayers()) {
+                int looseEnds = 0;
+                for (GameRoundEndComponent.RoundEndData entry : roundEnd.getPlayers()) {
                     matrices.push();
                     matrices.scale(2f, 2f, 1f);
                     matrices.translate(((looseEnds % 6) - 3.5) * 12, 14 + (looseEnds / 6) * 12, 0);
                     looseEnds++;
-                    var texture = TMMClient.PLAYER_ENTRIES_CACHE.get(entry.player().getId()).getSkinTextures().texture();
+                    Identifier texture = TMMClient.PLAYER_ENTRIES_CACHE.get(entry.player().getId()).getSkinTextures().texture();
                     if (texture != null) {
                         RenderSystem.enableBlend();
                         matrices.push();
                         matrices.translate(8, 0, 0);
-                        var offColour = entry.wasDead() ? 0.4f : 1f;
+                        float offColour = entry.wasDead() ? 0.4f : 1f;
                         context.drawTexturedQuad(texture, 0, 8, 0, 8, 0, 8 / 64f, 16 / 64f, 8 / 64f, 16 / 64f, 1f, offColour, offColour, 1f);
                         matrices.translate(-0.5, -0.5, 0);
                         matrices.scale(1.125f, 1.125f, 1f);
@@ -120,16 +125,20 @@ public class RoundTextRenderer {
                 }
                 matrices.pop();
             } else {
-                var vigilanteTotal = 1;
-                for (var entry : roundEnd.getPlayers())
-                    if (entry.role() == RoleAnnouncementTexts.VIGILANTE) vigilanteTotal += 1;
+                int vigilanteTotal = 1;
+                for (GameRoundEndComponent.RoundEndData entry : roundEnd.getPlayers()) {
+                    if (entry.role() == RoleAnnouncementTexts.VIGILANTE) {
+                        vigilanteTotal += 1;
+                    }
+                }
                 context.drawTextWithShadow(renderer, RoleAnnouncementTexts.CIVILIAN.titleText, -renderer.getWidth(RoleAnnouncementTexts.CIVILIAN.titleText) / 2 - 60, 14, 0xFFFFFF);
                 context.drawTextWithShadow(renderer, RoleAnnouncementTexts.VIGILANTE.titleText, -renderer.getWidth(RoleAnnouncementTexts.VIGILANTE.titleText) / 2 + 50, 14, 0xFFFFFF);
                 context.drawTextWithShadow(renderer, RoleAnnouncementTexts.KILLER.titleText, -renderer.getWidth(RoleAnnouncementTexts.KILLER.titleText) / 2 + 50, 14 + 16 + 24 * ((vigilanteTotal) / 2), 0xFFFFFF);
-                var civilians = 0;
-                var vigilantes = 0;
-                var killers = 0;
-                for (var entry : roundEnd.getPlayers()) {
+                int civilians = 0;
+                int vigilantes = 0;
+                int killers = 0;
+                // how many times are we going to iterate through the players
+                for (GameRoundEndComponent.RoundEndData entry : roundEnd.getPlayers()) {
                     matrices.push();
                     matrices.scale(2f, 2f, 1f);
 
@@ -147,12 +156,12 @@ public class RoundTextRenderer {
 
                     PlayerListEntry playerListEntry = TMMClient.PLAYER_ENTRIES_CACHE.get(entry.player().getId());
                     if (playerListEntry != null) {
-                        var texture = playerListEntry.getSkinTextures().texture();
+                        Identifier texture = playerListEntry.getSkinTextures().texture();
                         if (texture != null) {
                             RenderSystem.enableBlend();
                             matrices.push();
                             matrices.translate(8, 0, 0);
-                            var offColour = entry.wasDead() ? 0.4f : 1f;
+                            float offColour = entry.wasDead() ? 0.4f : 1f;
                             context.drawTexturedQuad(texture, 0, 8, 0, 8, 0, 8 / 64f, 16 / 64f, 8 / 64f, 16 / 64f, 1f, offColour, offColour, 1f);
                             matrices.translate(-0.5, -0.5, 0);
                             matrices.scale(1.125f, 1.125f, 1f);

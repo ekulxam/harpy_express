@@ -32,6 +32,7 @@ public final class LobbyPlayersRenderer {
         }
 
         MatrixStack matrices = context.getMatrices();
+
         matrices.push();
         matrices.translate(context.getScaledWindowWidth() / 2f, 6, 0);
         World world = player.getWorld();
@@ -41,20 +42,7 @@ public final class LobbyPlayersRenderer {
         Text playerCountText = Text.translatable("lobby.players.count", readyPlayerCount, count);
         context.drawTextWithShadow(renderer, playerCountText, -renderer.getWidth(playerCountText) / 2, 0, 0xFFFFFFFF);
 
-        AutoStartComponent autoStartComponent = AutoStartComponent.KEY.get(world);
-        if (autoStartComponent.isAutoStartActive()) {
-            MutableText autoStartText;
-            int color = 0xFFAAAAAA;
-            if (readyPlayerCount >= GameConstants.MIN_PLAYER_COUNT) {
-                int seconds = autoStartComponent.getTime() / 20;
-                autoStartText = Text.translatable(seconds <= 0 ? "lobby.autostart.starting" : "lobby.autostart.time", seconds);
-                color = 0xFF00BC16;
-            } else {
-                autoStartText = Text.translatable("lobby.autostart.active");
-            }
-            context.drawTextWithShadow(renderer, autoStartText, -renderer.getWidth(autoStartText) / 2, 10, color);
-        }
-
+        renderAutoStart(renderer, context, world, readyPlayerCount);
         matrices.pop();
 
         matrices.push();
@@ -69,6 +57,23 @@ public final class LobbyPlayersRenderer {
             context.drawTextWithShadow(renderer, text, 10, -90 + 10 * i, 0xFFFFFFFF);
         }
         matrices.pop();
+    }
+
+    private static void renderAutoStart(TextRenderer renderer, @NotNull DrawContext context, World world, int readyPlayerCount) {
+        AutoStartComponent autoStartComponent = AutoStartComponent.KEY.get(world);
+        if (!autoStartComponent.isAutoStartActive()) {
+            return;
+        }
+        MutableText autoStartText;
+        int color = 0xFFAAAAAA;
+        if (readyPlayerCount >= GameConstants.MIN_PLAYER_COUNT) {
+            int seconds = autoStartComponent.getTime() / 20;
+            autoStartText = Text.translatable(seconds <= 0 ? "lobby.autostart.starting" : "lobby.autostart.time", seconds);
+            color = 0xFF00BC16;
+        } else {
+            autoStartText = Text.translatable("lobby.autostart.active");
+        }
+        context.drawTextWithShadow(renderer, autoStartText, -renderer.getWidth(autoStartText) / 2, 10, color);
     }
 
     private static MutableText getThanksText() {

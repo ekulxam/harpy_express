@@ -47,7 +47,7 @@ public class TimeRenderer {
     }
 
     public static void tick() {
-        view.update();
+        view.tick();
     }
 
     public static class TimeNumberRenderer {
@@ -65,11 +65,11 @@ public class TimeRenderer {
             this.minutes.getRight().setTarget(mins);
         }
 
-        public void update() {
-            this.minutes.getLeft().update();
-            this.minutes.getRight().update();
-            this.seconds.getLeft().update();
-            this.seconds.getRight().update();
+        public void tick() {
+            this.minutes.getLeft().tick();
+            this.minutes.getRight().tick();
+            this.seconds.getLeft().tick();
+            this.seconds.getRight().tick();
         }
 
         public void render(TextRenderer renderer, @NotNull DrawContext context, int x, int y, int colour, float delta) {
@@ -91,50 +91,6 @@ public class TimeRenderer {
 
         public float getTarget() {
             return this.target;
-        }
-    }
-
-    public static class ScrollingDigit {
-        private final int power;
-        private final boolean cap6;
-        private float target;
-        private float value;
-        private float lastValue;
-
-        public ScrollingDigit(int power, boolean cap6) {
-            this.power = power;
-            this.cap6 = cap6;
-        }
-
-        public void update() {
-            this.lastValue = this.value;
-            this.value = MathHelper.lerp(0.15f, this.value, this.target);
-            if (Math.abs(this.value - this.target) < 0.01f) this.value = this.target;
-        }
-
-        public void render(@NotNull TextRenderer renderer, @NotNull DrawContext context, int colour, float delta) {
-            float value = MathHelper.lerp(delta, this.lastValue, this.value);
-            int digit = MathHelper.floor(value) % (this.cap6 ? 6 : 10);
-            int digitNext = MathHelper.floor(value + 1) % (this.cap6 ? 6 : 10);
-            double offset = Math.pow(value % 1, this.power);
-            colour &= 0xFFFFFF;
-            MatrixStack matrices = context.getMatrices();
-            matrices.push();
-            matrices.translate(0, -offset * (renderer.fontHeight + 2), 0);
-            double alpha = (1.0f - Math.abs(offset)) * 255.0f;
-            int baseColour = colour | (int) alpha << 24;
-            int nextColour = colour | (int) (Math.abs(offset) * 255.0f) << 24;
-            if ((baseColour & -67108864) != 0) {
-                context.drawTextWithShadow(renderer, String.valueOf(digit), 0, 0, baseColour);
-            }
-            if ((nextColour & -67108864) != 0) {
-                context.drawTextWithShadow(renderer, String.valueOf(digitNext), 0, renderer.fontHeight + 2, nextColour);
-            }
-            matrices.pop();
-        }
-
-        public void setTarget(float target) {
-            this.target = target;
         }
     }
 }

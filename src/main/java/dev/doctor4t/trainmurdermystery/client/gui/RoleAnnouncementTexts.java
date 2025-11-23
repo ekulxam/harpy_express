@@ -20,6 +20,7 @@ public final class RoleAnnouncementTexts {
         return role;
     }
 
+    @SuppressWarnings("unused")
     public static final RoleAnnouncementText BLANK = registerRoleAnnouncementText(new RoleAnnouncementText("", 0xFFFFFF));
     public static final RoleAnnouncementText CIVILIAN = registerRoleAnnouncementText(new RoleAnnouncementText("civilian", 0x36E51B));
     public static final RoleAnnouncementText VIGILANTE = registerRoleAnnouncementText(new RoleAnnouncementText("vigilante", 0x1B8AE5));
@@ -39,7 +40,7 @@ public final class RoleAnnouncementTexts {
         public final Function<Integer, Text> goalText;
         public final Text winText;
 
-        RoleAnnouncementText(String name, int colour) {
+        public RoleAnnouncementText(String name, int colour) {
             this.name = name;
             this.colour = colour;
             this.roleText = Text.translatable("announcement.role." + this.name.toLowerCase()).withColor(this.colour);

@@ -115,10 +115,11 @@ public class NoteScreen extends Screen {
     }
 
     private void renderSign(@NotNull DrawContext context) {
-        context.getMatrices().push();
-        context.getMatrices().translate((float) this.width / 2.0F, 90.0F, 50.0F);
+        MatrixStack matrices = context.getMatrices();
+        matrices.push();
+        matrices.translate((float) this.width / 2.0F, 90.0F, 50.0F);
         this.renderSignText(context);
-        context.getMatrices().pop();
+        matrices.pop();
     }
 
     private void renderSignText(@NotNull DrawContext context) {

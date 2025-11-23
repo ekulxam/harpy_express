@@ -13,6 +13,7 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.render.RenderLayer;
+import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.screen.PlayerScreenHandler;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
@@ -47,17 +48,18 @@ public class LimitedInventoryScreen extends LimitedHandledScreen<PlayerScreenHan
     protected void drawBackground(@NotNull DrawContext context, float delta, int mouseX, int mouseY) {
         context.drawTexture(BACKGROUND_TEXTURE, this.x, this.y, 0, 0, this.backgroundWidth, this.backgroundHeight);
 
-        context.getMatrices().push();
-        context.getMatrices().translate(context.getScaledWindowWidth() / 2f, context.getScaledWindowHeight(), 0);
+        MatrixStack matrices = context.getMatrices();
+        matrices.push();
+        matrices.translate(context.getScaledWindowWidth() / 2f, context.getScaledWindowHeight(), 0);
         float scale = 0.28f;
-        context.getMatrices().scale(scale, scale, 1f);
+        matrices.scale(scale, scale, 1f);
         int height = 254;
         int width = 497;
-        context.getMatrices().translate(0, -230, 0);
+        matrices.translate(0, -230, 0);
         int xOffset = 0;
         int yOffset = 0;
         context.drawTexturedQuad(ID, (int) (xOffset - width / 2f), (int) (xOffset + width / 2f), (int) (yOffset - height / 2f), (int) (yOffset + height / 2f), 0, 0, 1f, 0, 1f, 1f, 1f, 1f, 1f);
-        context.getMatrices().pop();
+        matrices.pop();
     }
 
     @Override

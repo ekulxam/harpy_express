@@ -51,7 +51,6 @@ import net.minecraft.block.Block;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
-import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.network.PlayerListEntry;
 import net.minecraft.client.option.CloudRenderMode;
 import net.minecraft.client.option.KeyBinding;
@@ -73,6 +72,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 
@@ -89,13 +89,6 @@ public class TMMClient implements ClientModInitializer {
     public static HandParticleManager handParticleManager;
     public static Map<PlayerEntity, Vec3d> particleMap;
     private static boolean prevGameRunning;
-    // THESE ARE ALL NULL BEFORE FIRST TICK - SkyNotTheLimit
-    @Nullable
-    public static GameWorldComponent gameComponent;
-    @Nullable
-    public static TrainWorldComponent trainComponent;
-    @Nullable
-    public static PlayerMoodComponent moodComponent;
 
     public static final Map<UUID, PlayerListEntry> PLAYER_ENTRIES_CACHE = Maps.newHashMap();
 
@@ -225,22 +218,10 @@ public class TMMClient implements ClientModInitializer {
         BlockEntityRendererFactories.register(TMMBlockEntities.HORN, HornBlockEntityRenderer::new);
 
         // Ambience
-        AmbienceUtil.registerBackgroundAmbience(new BackgroundAmbience(TMMSounds.AMBIENT_TRAIN_INSIDE, player -> isTrainMoving() && !TMM.isSkyVisibleAdjacent(player), 20));
-        AmbienceUtil.registerBackgroundAmbience(new BackgroundAmbience(TMMSounds.AMBIENT_TRAIN_OUTSIDE, player -> isTrainMoving() && TMM.isSkyVisibleAdjacent(player), 20));
-        AmbienceUtil.registerBackgroundAmbience(new BackgroundAmbience(TMMSounds.AMBIENT_PSYCHO_DRONE, player -> gameComponent.isPsychoActive(), 20));
+        AmbienceUtil.registerBackgroundAmbience(new BackgroundAmbience(TMMSounds.AMBIENT_TRAIN_INSIDE, player -> isTrainMoving(player.getWorld()) && !TMM.isSkyVisibleAdjacent(player), 20));
+        AmbienceUtil.registerBackgroundAmbience(new BackgroundAmbience(TMMSounds.AMBIENT_TRAIN_OUTSIDE, player -> isTrainMoving(player.getWorld()) && TMM.isSkyVisibleAdjacent(player), 20));
+        AmbienceUtil.registerBackgroundAmbience(new BackgroundAmbience(TMMSounds.AMBIENT_PSYCHO_DRONE, player -> getGameComponent(player.getWorld()).isPsychoActive(), 20));
         AmbienceUtil.registerBlockEntityAmbience(TMMBlockEntities.SPRINKLER, new BlockEntityAmbience(TMMSounds.BLOCK_SPRINKLER_RUN, 0.5f, blockEntity -> blockEntity instanceof SprinklerBlockEntity sprinklerBlockEntity && sprinklerBlockEntity.isPowered(), 20));
-
-        // Caching components
-        ClientTickEvents.START_WORLD_TICK.register(clientWorld -> {
-            // WARNING - POSSIBLE WORLD LEAK WHEN LEAVING WORLD - FIX PLEASE - SkyNotTheLimit
-            gameComponent = GameWorldComponent.KEY.get(clientWorld);
-            trainComponent = TrainWorldComponent.KEY.get(clientWorld);
-            if (MinecraftClient.getInstance().player == null) {
-                moodComponent = null;
-            } else {
-                moodComponent = PlayerMoodComponent.KEY.get(MinecraftClient.getInstance().player);
-            }
-        });
 
         // Lock options
         OptionLocker.overrideOption("gamma", 0d);
@@ -265,7 +246,7 @@ public class TMMClient implements ClientModInitializer {
         ClientTickEvents.START_WORLD_TICK.register(clientWorld -> {
             prevInstinctLightLevel = instinctLightLevel;
             // instinct night vision
-            if (TMMClient.isInstinctEnabled()) {
+            if (TMMClient.isInstinctEnabled(clientWorld)) {
                 instinctLightLevel += .1f;
             } else {
                 instinctLightLevel -= .1f;
@@ -273,28 +254,33 @@ public class TMMClient implements ClientModInitializer {
             instinctLightLevel = MathHelper.clamp(instinctLightLevel, -.04f, .5f);
 
             // Cache player entries
+            MinecraftClient client = MinecraftClient.getInstance();
             for (AbstractClientPlayerEntity player : clientWorld.getPlayers()) {
-                ClientPlayNetworkHandler networkHandler = MinecraftClient.getInstance().getNetworkHandler();
+                ClientPlayNetworkHandler networkHandler = client.getNetworkHandler();
                 if (networkHandler != null) {
                     PLAYER_ENTRIES_CACHE.put(player.getUuid(), networkHandler.getPlayerListEntry(player.getUuid()));
                 }
             }
+            GameWorldComponent gameComponent = getGameComponent(clientWorld);
+
             if (!prevGameRunning && gameComponent.isRunning()) {
-                MinecraftClient.getInstance().player.getInventory().selectedSlot = 8;
+                if (client.player != null) {
+                    client.player.getInventory().selectedSlot = 8;
+                }
             }
+
             prevGameRunning = gameComponent.isRunning();
 
             // Fade sound with game start / stop fade
             GameWorldComponent component = GameWorldComponent.KEY.get(clientWorld);
             if (component.getFade() > 0) {
-                MinecraftClient.getInstance().getSoundManager().updateSoundVolume(SoundCategory.MASTER, MathHelper.map(component.getFade(), 0, GameConstants.FADE_TIME, soundLevel, 0));
+                client.getSoundManager().updateSoundVolume(SoundCategory.MASTER, MathHelper.map(component.getFade(), 0, GameConstants.FADE_TIME, soundLevel, 0));
             } else {
-                MinecraftClient.getInstance().getSoundManager().updateSoundVolume(SoundCategory.MASTER, soundLevel);
-                soundLevel = MinecraftClient.getInstance().options.getSoundVolume(SoundCategory.MASTER);
+                client.getSoundManager().updateSoundVolume(SoundCategory.MASTER, soundLevel);
+                soundLevel = client.options.getSoundVolume(SoundCategory.MASTER);
             }
 
-            ClientPlayerEntity player = MinecraftClient.getInstance().player;
-            if (player != null) {
+            if (client.player != null) {
                 StoreRenderer.tick();
                 TimeRenderer.tick();
             }
@@ -357,16 +343,20 @@ public class TMMClient implements ClientModInitializer {
         ClientPlayNetworking.registerGlobalReceiver(TaskCompleteS2CPayload.ID, (payload, context) -> MoodRenderer.arrowProgress = 1f);
     }
 
-    public static TrainWorldComponent getTrainComponent() {
-        return trainComponent;
-    }
-
-    public static float getTrainSpeed() {
+    public static float getTrainSpeed(@Nullable World world) {
+        TrainWorldComponent trainComponent = getTrainComponent(world);
+        if (trainComponent == null) {
+            return 0;
+        }
         return trainComponent.getSpeed();
     }
 
     public static boolean isTrainMoving() {
-        return trainComponent != null && trainComponent.getSpeed() > 0;
+        return isTrainMoving(MinecraftClient.getInstance().world);
+    }
+
+    public static boolean isTrainMoving(@Nullable World world) {
+        return getTrainSpeed(world) > 0;
     }
 
     public static class CustomModelProvider implements ModelLoadingPlugin {
@@ -417,12 +407,15 @@ public class TMMClient implements ClientModInitializer {
         return GameFunctions.isPlayerSpectatingOrCreative(MinecraftClient.getInstance().player);
     }
 
-    public static boolean isKiller() {
+    public static boolean isKiller(World world) {
+        GameWorldComponent gameComponent = getGameComponent(world);
         return gameComponent != null && gameComponent.isRole(MinecraftClient.getInstance().player, TMMRoles.KILLER);
     }
 
     public static int getInstinctHighlight(Entity target) {
-        if (!isInstinctEnabled()) {
+        World world = target.getWorld();
+
+        if (!isInstinctEnabled(world)) {
             return -1;
         }
 //        if (target instanceof PlayerBodyEntity) return 0x606060;
@@ -436,10 +429,13 @@ public class TMMClient implements ClientModInitializer {
         if (GameFunctions.isPlayerSpectatingOrCreative(player)) {
             return -1;
         }
-        if (isKiller() && gameComponent.isRole(player, TMMRoles.KILLER)) {
+
+        GameWorldComponent gameComponent = getGameComponent(world);
+
+        if (isKiller(world) && gameComponent != null && gameComponent.isRole(player, TMMRoles.KILLER)) {
             return MathHelper.hsvToRgb(0F, 1.0F, 0.6F);
         }
-        if (gameComponent.isInnocent(player)) {
+        if (gameComponent != null && gameComponent.isInnocent(player)) {
             float mood = PlayerMoodComponent.KEY.get(target).getMood();
             if (mood < GameConstants.DEPRESSIVE_MOOD_THRESHOLD) {
                 return 0x171DC6;
@@ -455,12 +451,36 @@ public class TMMClient implements ClientModInitializer {
         return -1;
     }
 
-    public static boolean isInstinctEnabled() {
-        return instinctKeybind.isPressed() && ((isKiller() && isPlayerAliveAndInSurvival()) || isPlayerSpectatingOrCreative());
+    public static boolean isInstinctEnabled(World world) {
+        return instinctKeybind.isPressed() && ((isKiller(world) && isPlayerAliveAndInSurvival()) || isPlayerSpectatingOrCreative());
     }
 
     public static int getLockedRenderDistance(boolean ultraPerfMode) {
         return ultraPerfMode ? 2 : 32;
+    }
+
+    @Nullable
+    public static GameWorldComponent getGameComponent(@Nullable World world) {
+        if (world == null) {
+            return null;
+        }
+        return GameWorldComponent.KEY.get(world);
+    }
+
+    @Nullable
+    public static TrainWorldComponent getTrainComponent(@Nullable World world) {
+        if (world == null) {
+            return null;
+        }
+        return TrainWorldComponent.KEY.get(world);
+    }
+
+    @Nullable
+    public static PlayerMoodComponent getMoodComponent(@Nullable PlayerEntity player) {
+        if (player == null) {
+            return null;
+        }
+        return PlayerMoodComponent.KEY.get(player);
     }
 
     static {

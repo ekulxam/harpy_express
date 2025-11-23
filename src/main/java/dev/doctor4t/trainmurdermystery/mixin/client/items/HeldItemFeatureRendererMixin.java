@@ -2,8 +2,10 @@ package dev.doctor4t.trainmurdermystery.mixin.client.items;
 
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import dev.doctor4t.trainmurdermystery.cca.PlayerMoodComponent;
 import dev.doctor4t.trainmurdermystery.client.TMMClient;
 import dev.doctor4t.trainmurdermystery.index.TMMItems;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.entity.feature.HeldItemFeatureRenderer;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
@@ -23,8 +25,9 @@ public class HeldItemFeatureRendererMixin {
             ret = ItemStack.EMPTY;
         }
 
-        if (TMMClient.moodComponent != null && TMMClient.moodComponent.isLowerThanMid()) { // make sure it's only the main hand item that's being replaced
-            HashMap<UUID, ItemStack> psychosisItems = TMMClient.moodComponent.getPsychosisItems();
+        PlayerMoodComponent playerMoodComponent = TMMClient.getMoodComponent(MinecraftClient.getInstance().player);
+        if (playerMoodComponent != null && playerMoodComponent.isLowerThanMid()) { // make sure it's only the main hand item that's being replaced
+            HashMap<UUID, ItemStack> psychosisItems = playerMoodComponent.getPsychosisItems();
             UUID uuid = instance.getUuid();
             if (psychosisItems.containsKey(uuid)) {
                 ret = psychosisItems.get(uuid);

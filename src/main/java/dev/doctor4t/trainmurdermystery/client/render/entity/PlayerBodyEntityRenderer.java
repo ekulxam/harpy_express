@@ -2,6 +2,7 @@ package dev.doctor4t.trainmurdermystery.client.render.entity;
 
 import dev.doctor4t.ratatouille.client.lib.render.helpers.Easing;
 import dev.doctor4t.trainmurdermystery.TMM;
+import dev.doctor4t.trainmurdermystery.cca.PlayerMoodComponent;
 import dev.doctor4t.trainmurdermystery.client.TMMClient;
 import dev.doctor4t.trainmurdermystery.client.model.TMMModelLayers;
 import dev.doctor4t.trainmurdermystery.client.model.entity.PlayerSkeletonEntityModel;
@@ -41,16 +42,19 @@ public class PlayerBodyEntityRenderer<T extends LivingEntity, M extends EntityMo
         this.setModelPose();
 
         matrixStack.push();
+        PlayerMoodComponent moodComponent = TMMClient.getMoodComponent(MinecraftClient.getInstance().player);
+        final boolean depressed = moodComponent != null && moodComponent.isLowerThanDepressed();
+
         float clamp = MathHelper.clamp((float) (playerBodyEntity.age - GameConstants.TIME_TO_DECOMPOSITION) / GameConstants.DECOMPOSING_TIME, 0, GameConstants.TIME_TO_DECOMPOSITION + GameConstants.DECOMPOSING_TIME);
         float ease = Easing.CUBIC_IN.ease(clamp, 0, -1, 1);
         if (ease > -1) {
             matrixStack.translate(0, ease, 0);
-            float alpha = TMMClient.moodComponent.isLowerThanDepressed() ? MathHelper.lerp(MathHelper.clamp(Easing.SINE_IN.ease(Math.min(1f, (float) playerBodyEntity.age / 100f), 0, 1, 1), 0, 1), 1f, 0f) : 1f;
+            float alpha = depressed ? MathHelper.lerp(MathHelper.clamp(Easing.SINE_IN.ease(Math.min(1f, (float) playerBodyEntity.age / 100f), 0, 1, 1), 0, 1), 1f, 0f) : 1f;
             this.renderBody(playerBodyEntity, f, g, matrixStack, vertexConsumerProvider, light, alpha);
         }
         matrixStack.pop();
 
-        renderSkeleton(playerBodyEntity, f, g, matrixStack, vertexConsumerProvider, light, TMMClient.moodComponent.isLowerThanDepressed() ? 0f : 1f);
+        renderSkeleton(playerBodyEntity, f, g, matrixStack, vertexConsumerProvider, light, depressed ? 0f : 1f);
     }
 
     public void renderBody(PlayerBodyEntity livingEntity, float f, float g, MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int light, float alpha) {

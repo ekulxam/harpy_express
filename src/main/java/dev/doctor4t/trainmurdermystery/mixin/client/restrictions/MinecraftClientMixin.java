@@ -2,6 +2,7 @@ package dev.doctor4t.trainmurdermystery.mixin.client.restrictions;
 
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import dev.doctor4t.trainmurdermystery.cca.GameWorldComponent;
 import dev.doctor4t.trainmurdermystery.client.TMMClient;
 import dev.doctor4t.trainmurdermystery.client.gui.screen.ingame.LimitedInventoryScreen;
 import net.minecraft.client.MinecraftClient;
@@ -20,7 +21,8 @@ public abstract class MinecraftClientMixin {
 
     @WrapOperation(method = "handleInputEvents", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/MinecraftClient;setScreen(Lnet/minecraft/client/gui/screen/Screen;)V", ordinal = 1))
     private void replaceInventoryScreenWithLimitedInventoryScreen(MinecraftClient instance, Screen screen, Operation<Void> original) {
-        if (TMMClient.gameComponent.getFade() > 0) {
+        GameWorldComponent gameWorldComponent = TMMClient.getGameComponent(instance.world);
+        if (gameWorldComponent != null && TMMClient.getGameComponent(instance.world).getFade() > 0) {
             return;
         }
 

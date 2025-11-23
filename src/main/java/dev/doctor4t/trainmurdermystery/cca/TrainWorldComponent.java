@@ -37,11 +37,11 @@ public class TrainWorldComponent implements AutoSyncedComponent, ServerTickingCo
     }
 
     public int getSpeed() {
-        return speed;
+        return this.speed;
     }
 
     public float getTime() {
-        return time;
+        return this.time;
     }
 
     public void setTime(int time) {

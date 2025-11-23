@@ -25,25 +25,33 @@ public class TimeRenderer {
 
     public static void renderHud(TextRenderer renderer, @NotNull ClientPlayerEntity player, @NotNull DrawContext context, float delta) {
         GameWorldComponent gameWorldComponent = GameWorldComponent.KEY.get(player.getWorld());
-        if (gameWorldComponent.isRunning() && (gameWorldComponent.getGameMode() == GameWorldComponent.GameMode.DISCOVERY || gameWorldComponent.isRole(player, TMMRoles.KILLER) || GameFunctions.isPlayerSpectatingOrCreative(player))) {
-            int time = GameTimeComponent.KEY.get(player.getWorld()).getTime();
-            if (Math.abs(view.getTarget() - time) > 10) offsetDelta = time > view.getTarget() ? .6f : -.6f;
-            if (time < GameConstants.getInTicks(1, 0)) {
-                offsetDelta = -0.9f;
-            } else {
-                offsetDelta = MathHelper.lerp(delta / 16, offsetDelta, 0f);
-            }
-            view.setTarget(time);
-            float red = offsetDelta > 0 ? 1f - offsetDelta : 1f;
-            float green = offsetDelta < 0 ? 1f + offsetDelta : 1f;
-            float blue = 1f - Math.abs(offsetDelta);
-            int colour = MathHelper.packRgb(red, green, blue) | 0xFF000000;
-            MatrixStack matrices = context.getMatrices();
-            matrices.push();
-            matrices.translate(context.getScaledWindowWidth() / 2f, 6, 0);
-            view.render(renderer, context, 0, 0, colour, delta);
-            matrices.pop();
+        if (!gameWorldComponent.isRunning()) {
+            return;
         }
+        if (gameWorldComponent.getGameMode() != GameWorldComponent.GameMode.DISCOVERY
+                && !gameWorldComponent.isRole(player, TMMRoles.KILLER)
+                && !GameFunctions.isPlayerSpectatingOrCreative(player)
+        ) {
+            return;
+        }
+
+        int time = GameTimeComponent.KEY.get(player.getWorld()).getTime();
+        if (Math.abs(view.getTarget() - time) > 10) offsetDelta = time > view.getTarget() ? .6f : -.6f;
+        if (time < GameConstants.getInTicks(1, 0)) {
+            offsetDelta = -0.9f;
+        } else {
+            offsetDelta = MathHelper.lerp(delta / 16, offsetDelta, 0f);
+        }
+        view.setTarget(time);
+        float red = offsetDelta > 0 ? 1f - offsetDelta : 1f;
+        float green = offsetDelta < 0 ? 1f + offsetDelta : 1f;
+        float blue = 1f - Math.abs(offsetDelta);
+        int colour = MathHelper.packRgb(red, green, blue) | 0xFF000000;
+        MatrixStack matrices = context.getMatrices();
+        matrices.push();
+        matrices.translate(context.getScaledWindowWidth() / 2f, 6, 0);
+        view.render(renderer, context, 0, 0, colour, delta);
+        matrices.pop();
     }
 
     public static void tick() {

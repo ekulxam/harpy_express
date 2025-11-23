@@ -2,6 +2,7 @@ package dev.doctor4t.trainmurdermystery.mixin.client.compat.sodium;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.sugar.Local;
+import dev.doctor4t.trainmurdermystery.cca.TrainWorldComponent;
 import dev.doctor4t.trainmurdermystery.client.TMMClient;
 import dev.doctor4t.trainmurdermystery.client.compat.SodiumShaderInterface;
 import net.caffeinemc.mods.sodium.client.gl.buffer.GlBufferUsage;
@@ -19,6 +20,7 @@ import net.caffeinemc.mods.sodium.client.render.chunk.shader.ChunkShaderInterfac
 import net.caffeinemc.mods.sodium.client.render.chunk.terrain.TerrainRenderPass;
 import net.caffeinemc.mods.sodium.client.render.viewport.CameraTransform;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.world.ClientWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkSectionPos;
 import org.lwjgl.system.MemoryUtil;
@@ -107,13 +109,18 @@ public abstract class DefaultChunkRendererMixin {
         trainmurdermystery$buffer.putFloat(sectionIndex * 16 + 8, 0);
 
         if (TMMClient.isTrainMoving()) {
-            float trainSpeed = TMMClient.getTrainSpeed();
+            ClientWorld clientWorld = MinecraftClient.getInstance().world;
+            float trainSpeed = TMMClient.getTrainSpeed(clientWorld);
             int chunkSize = 16;
             int tileWidth = 15 * chunkSize;
             int height = 116;
             int tileLength = 32 * chunkSize;
             int tileSize = tileLength * 3;
-            float time = TMMClient.trainComponent.getTime() + MinecraftClient.getInstance().getRenderTickCounter().getTickDelta(true);
+            float time = MinecraftClient.getInstance().getRenderTickCounter().getTickDelta(true);
+            TrainWorldComponent trainComponent = TMMClient.getTrainComponent(clientWorld);
+            if (trainComponent != null) {
+                time += trainComponent.getTime();
+            }
 
             BlockPos blockPos = new BlockPos(
                     region.getOriginX() + LocalSectionIndex.unpackX(sectionIndex) * 16,

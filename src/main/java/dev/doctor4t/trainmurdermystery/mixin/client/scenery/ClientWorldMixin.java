@@ -51,7 +51,7 @@ public abstract class ClientWorldMixin extends World {
 
     @Inject(method = "tick", at = @At("TAIL"))
     public void addSnowflakes(BooleanSupplier shouldKeepTicking, CallbackInfo ci) {
-        if (TMMClient.isTrainMoving() && TMMClient.getTrainComponent().isSnowing()) {
+        if (TMMClient.isTrainMoving(this) && TMMClient.getTrainComponent(this).isSnowing()) {
             ClientPlayerEntity player = client.player;
             Random random = player.getRandom();
             for (int i = 0; i < 200; i++) {

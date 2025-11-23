@@ -1,8 +1,10 @@
 package dev.doctor4t.trainmurdermystery.mixin.client;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
+import dev.doctor4t.trainmurdermystery.cca.PlayerMoodComponent;
 import dev.doctor4t.trainmurdermystery.client.TMMClient;
 import dev.doctor4t.trainmurdermystery.index.TMMItems;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.render.entity.PlayerEntityRenderer;
 import net.minecraft.client.render.entity.model.BipedEntityModel;
@@ -35,8 +37,10 @@ public class PlayerEntityRendererMixin {
             return ItemStack.EMPTY;
         }
 
-        if (TMMClient.moodComponent != null && TMMClient.moodComponent.isLowerThanMid()) { // make sure it's only the main hand item that's being replaced
-            HashMap<UUID, ItemStack> psychosisItems = TMMClient.moodComponent.getPsychosisItems();
+        PlayerMoodComponent moodComponent = TMMClient.getMoodComponent(MinecraftClient.getInstance().player);
+
+        if (moodComponent != null && moodComponent.isLowerThanMid()) { // make sure it's only the main hand item that's being replaced
+            HashMap<UUID, ItemStack> psychosisItems = moodComponent.getPsychosisItems();
             UUID uuid = player.getUuid();
             if (psychosisItems.containsKey(uuid)) {
                 return psychosisItems.get(uuid);

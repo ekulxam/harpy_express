@@ -9,6 +9,7 @@ import dev.doctor4t.trainmurdermystery.client.TMMClient;
 import dev.doctor4t.trainmurdermystery.game.GameConstants;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.render.RenderTickCounter;
@@ -254,7 +255,7 @@ public final class MoodRenderer {
         public boolean tick(PlayerMoodComponent.TrainTask trainTask, float tickDelta) {
             this.present = trainTask != null;
             if (this.present) {
-                this.text = Text.translatable("task." + (TMMClient.isKiller() ? "fake" : "feel")).append(Text.translatable("task." + trainTask.getName()));
+                this.text = Text.translatable("task." + (TMMClient.isKiller(MinecraftClient.getInstance().world) ? "fake" : "feel")).append(Text.translatable("task." + trainTask.getName()));
             }
             this.alpha = MathHelper.lerp(tickDelta / 16, this.alpha, this.present ? 1f : 0f);
             this.offset = MathHelper.lerp(tickDelta / 32, this.offset, this.index);

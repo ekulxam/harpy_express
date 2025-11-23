@@ -1,15 +1,19 @@
 package dev.doctor4t.trainmurdermystery.client.render.block_entity;
 
 import dev.doctor4t.trainmurdermystery.block_entity.WheelBlockEntity;
+import dev.doctor4t.trainmurdermystery.cca.TrainWorldComponent;
 import dev.doctor4t.trainmurdermystery.client.TMMClient;
 import dev.doctor4t.trainmurdermystery.client.model.TMMModelLayers;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.model.*;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.block.entity.BlockEntityRendererFactory;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.client.world.ClientWorld;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.RotationAxis;
+import net.minecraft.world.World;
 
 public class WheelBlockEntityRenderer extends AnimatableBlockEntityRenderer<WheelBlockEntity> {
 
@@ -51,7 +55,14 @@ public class WheelBlockEntityRenderer extends AnimatableBlockEntityRenderer<Whee
     @Override
     public void render(WheelBlockEntity entity, float tickDelta, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay) {
         matrices.translate(0, 0.3f, .5f);
-        matrices.multiply(RotationAxis.POSITIVE_Z.rotationDegrees((TMMClient.trainComponent.getTime() + tickDelta) * (TMMClient.getTrainSpeed() * .9f)));
+
+        World world = entity.getWorld();
+        float time = tickDelta;
+        TrainWorldComponent trainComponent = TMMClient.getTrainComponent(world);
+        if (trainComponent != null) {
+            time += trainComponent.getTime();
+        }
+        matrices.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(time * (TMMClient.getTrainSpeed(world) * .9f)));
         super.render(entity, tickDelta, matrices, vertexConsumers, light, overlay);
     }
 

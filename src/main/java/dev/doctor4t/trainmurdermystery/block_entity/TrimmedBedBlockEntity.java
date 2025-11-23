@@ -52,9 +52,16 @@ public class TrimmedBedBlockEntity extends BlockEntity {
 
     public static <T extends BlockEntity> void clientTick(World world, BlockPos pos, BlockState state, T t) {
         TrimmedBedBlockEntity entity = (TrimmedBedBlockEntity) t;
-        if (!TMMClient.isKiller()) return;
-        if (!entity.hasScorpion()) return;
-        if (world.getRandom().nextBetween(0, 20) < 17) return;
+
+        if (!TMMClient.isKiller(world)) {
+            return;
+        }
+        if (!entity.hasScorpion()) {
+            return;
+        }
+        if (world.getRandom().nextBetween(0, 20) < 17) {
+            return;
+        }
 
         world.addParticle(
                 TMMParticles.POISON,

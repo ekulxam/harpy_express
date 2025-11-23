@@ -5,6 +5,8 @@ import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import dev.doctor4t.ratatouille.client.lib.render.helpers.Easing;
 import dev.doctor4t.trainmurdermystery.TMM;
+import dev.doctor4t.trainmurdermystery.cca.GameWorldComponent;
+import dev.doctor4t.trainmurdermystery.cca.TrainWorldComponent;
 import dev.doctor4t.trainmurdermystery.client.TMMClient;
 import dev.doctor4t.trainmurdermystery.client.gui.*;
 import dev.doctor4t.trainmurdermystery.game.GameConstants;
@@ -41,7 +43,8 @@ public class InGameHudMixin {
     // Look into using Fabric HUD APIs? - SkyNotTheLimit
     @Inject(method = "renderMainHud", at = @At("TAIL"))
     private void renderGameHud(DrawContext context, RenderTickCounter tickCounter, CallbackInfo ci) {
-        if (TMMClient.trainComponent == null || !TMMClient.trainComponent.hasHud()) {
+        TrainWorldComponent trainComponent = TMMClient.getTrainComponent(this.client.world);
+        if (trainComponent == null || !trainComponent.hasHud()) {
             return;
         }
 
@@ -144,11 +147,12 @@ public class InGameHudMixin {
 
     @WrapMethod(method = "renderSleepOverlay")
     private void removeSleepOverlayAndDoGameFade(DrawContext context, RenderTickCounter tickCounter, Operation<Void> original) {
-        if (TMMClient.gameComponent == null) {
+        GameWorldComponent gameComponent = TMMClient.getGameComponent(this.client.world);
+        if (gameComponent == null) {
             return;
         }
         // game start / stop fade in / out
-        float fadeIn = TMMClient.gameComponent.getFade();
+        float fadeIn = gameComponent.getFade();
         if (fadeIn >= 0) {
             this.client.getProfiler().push("tmmFade");
             float fadeAlpha = MathHelper.lerp(Math.min(fadeIn / GameConstants.FADE_TIME, 1), 0f, 1f);

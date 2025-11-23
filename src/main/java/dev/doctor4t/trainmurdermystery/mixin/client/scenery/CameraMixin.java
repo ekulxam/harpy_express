@@ -2,6 +2,7 @@ package dev.doctor4t.trainmurdermystery.mixin.client.scenery;
 
 import dev.doctor4t.trainmurdermystery.TMM;
 import dev.doctor4t.trainmurdermystery.TMMConfig;
+import dev.doctor4t.trainmurdermystery.cca.PlayerMoodComponent;
 import dev.doctor4t.trainmurdermystery.client.TMMClient;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
@@ -60,7 +61,8 @@ public abstract class CameraMixin {
         }
 
         int age = player.age;
-        float v = (1 + (1 - TMMClient.moodComponent.getMood())) * 2.5f;
+
+        float v = (1 + (1 - TMMClient.getMoodComponent(player).getMood())) * 2.5f;
         float amplitude = .0025f;
         float strength = 0.5f;
 

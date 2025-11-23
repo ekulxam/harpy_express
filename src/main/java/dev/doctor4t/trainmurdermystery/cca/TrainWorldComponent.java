@@ -122,8 +122,9 @@ public class TrainWorldComponent implements AutoSyncedComponent, ServerTickingCo
     public void serverTick() {
         tickTime();
 
-        ServerWorld serverWorld = (ServerWorld) world;
-        serverWorld.setTimeOfDay(timeOfDay.time);
+        if (this.world instanceof ServerWorld serverWorld) {
+            serverWorld.setTimeOfDay(timeOfDay.time);
+        }
     }
 
     public void reset() {

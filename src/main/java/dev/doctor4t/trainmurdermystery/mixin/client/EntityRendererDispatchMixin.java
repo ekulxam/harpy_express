@@ -54,7 +54,6 @@ public class EntityRendererDispatchMixin {
         }
     }
 
-
     @Unique
     private static Map<SkinTextures.Model, EntityRenderer<? extends PlayerBodyEntity>> reloadPlayerBodyRenderers(EntityRendererFactory.Context ctx) {
         ImmutableMap.Builder<SkinTextures.Model, EntityRenderer<? extends PlayerBodyEntity>> builder = ImmutableMap.builder();
@@ -67,5 +66,4 @@ public class EntityRendererDispatchMixin {
         });
         return builder.build();
     }
-
 }

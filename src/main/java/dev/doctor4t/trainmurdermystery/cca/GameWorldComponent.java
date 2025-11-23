@@ -286,16 +286,25 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
     public void serverTick() {
         tickCommon();
 
+        ServerWorld serverWorld;
+        if (this.world instanceof ServerWorld) {
+            serverWorld = (ServerWorld) this.world;
+        } else {
+            serverWorld = null;
+        }
+
         if (ticksUntilNextResetAttempt-- == 0) {
-            if (GameFunctions.tryResetTrain((ServerWorld) this.world)) {
+            if (serverWorld != null && GameFunctions.tryResetTrain(serverWorld) {
                 ticksUntilNextResetAttempt = 5;
             }
         }
 
-        ServerWorld serverWorld = (ServerWorld) this.world;
+        if (serverWorld == null) {
+            return;
+        }
 
         // if not running and spectators or not in lobby reset them
-        if (world.getTime() % 20 == 0) {
+        if (serverWorld.getTime() % 20 == 0) {
             for (ServerPlayerEntity player : serverWorld.getPlayers()) {
                 if (!isRunning() && (player.isSpectator() && serverWorld.getServer().getPermissionLevel(player.getGameProfile()) < 2 || (GameFunctions.isPlayerAliveAndSurvival(player) && GameConstants.PLAY_AREA.contains(player.getPos())))) {
                     GameFunctions.resetPlayer(player);
@@ -303,114 +312,134 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
             }
         }
 
-        if (serverWorld.getServer().getOverworld().equals(serverWorld)) {
-            TrainWorldComponent trainComponent = TrainWorldComponent.KEY.get(serverWorld);
+        if (!serverWorld.getServer().getOverworld().equals(serverWorld)) {
+            return;
+        }
 
-            // spectator limits
-            if (trainComponent.getSpeed() > 0) {
-                for (ServerPlayerEntity player : serverWorld.getPlayers()) {
-                    if (!GameFunctions.isPlayerAliveAndSurvival(player) && isBound()) {
-                        GameFunctions.limitPlayerToBox(player, GameConstants.PLAY_AREA);
-                    }
+        TrainWorldComponent trainComponent = TrainWorldComponent.KEY.get(serverWorld);
+
+        // spectator limits
+        if (trainComponent.getSpeed() > 0) {
+            for (ServerPlayerEntity player : serverWorld.getPlayers()) {
+                if (!GameFunctions.isPlayerAliveAndSurvival(player) && isBound()) {
+                    GameFunctions.limitPlayerToBox(player, GameConstants.PLAY_AREA);
                 }
             }
+        }
 
-            if (this.isRunning()) {
-                boolean civilianAlive = false;
-                for (ServerPlayerEntity player : serverWorld.getPlayers()) {
-                    // kill players who fell off the train
-                    if (GameFunctions.isPlayerAliveAndSurvival(player) && player.getY() < GameConstants.PLAY_AREA.minY) {
-                        GameFunctions.killPlayer(player, false, player.getLastAttacker() instanceof PlayerEntity killerPlayer ? killerPlayer : null, TMM.id("fell_out_of_train"));
-                    }
+        if (this.isRunning()) {
+            tickRunning(serverWorld);
+        }
 
-                    // passive money
-                    Integer balanceToAdd = GameConstants.PASSIVE_MONEY_TICKER.apply(world.getTime());
-                    if (balanceToAdd > 0) PlayerShopComponent.KEY.get(player).addToBalance(balanceToAdd);
-                    if (this.isInnocent(player) && !GameFunctions.isPlayerEliminated(player)) civilianAlive = true;
-                }
-
-                // check killer win condition: kill count reached
-                GameFunctions.WinStatus winStatus = GameFunctions.WinStatus.NONE;
-
-                if (gameMode == GameMode.MURDER) {
-                    // check killer win condition (kill count reached)
-                    if (!civilianAlive) {
-                        winStatus = GameFunctions.WinStatus.KILLERS;
-                    }
-
-                    // check passenger win condition (all killers are dead)
-                    if (winStatus == GameFunctions.WinStatus.NONE) {
-                        winStatus = GameFunctions.WinStatus.PASSENGERS;
-                        for (UUID player : this.getAllWithRole(TMMRoles.KILLER)) {
-                            if (!GameFunctions.isPlayerEliminated(serverWorld.getPlayerByUuid(player))) {
-                                winStatus = GameFunctions.WinStatus.NONE;
-                            }
-                        }
-                    }
-                }
-
-                // check if last man standing in loose end
-                if (gameMode == GameMode.LOOSE_ENDS) {
-                    int playersLeft = 0;
-                    PlayerEntity lastPlayer = null;
-                    for (PlayerEntity player : world.getPlayers()) {
-                        if (GameFunctions.isPlayerAliveAndSurvival(player)) {
-                            playersLeft++;
-                            lastPlayer = player;
-                        }
-                    }
-
-                    if (playersLeft <= 0) {
-                        GameFunctions.stopGame(serverWorld);
-                    }
-
-                    if (playersLeft == 1) {
-                        this.setLooseEndWinner(lastPlayer.getUuid());
-                        winStatus = GameFunctions.WinStatus.LOOSE_END;
-                    }
-                }
-
-                // check if out of time
-                if (winStatus == GameFunctions.WinStatus.NONE && !GameTimeComponent.KEY.get(serverWorld).hasTime())
-                    winStatus = GameFunctions.WinStatus.TIME;
-
-                // stop game if ran out of time on discovery mode
-                if (gameMode == GameMode.DISCOVERY && winStatus == GameFunctions.WinStatus.TIME)
-                    GameFunctions.stopGame(serverWorld);
-
-                // game end on win and display
-                if (winStatus != GameFunctions.WinStatus.NONE && this.gameStatus == GameStatus.ACTIVE) {
-                    GameRoundEndComponent.KEY.get(serverWorld).setRoundEndData(serverWorld.getPlayers(), winStatus);
-                    for (ServerPlayerEntity player : serverWorld.getPlayers()) {
-                        if (winStatus == GameFunctions.WinStatus.TIME && this.isRole(player, TMMRoles.KILLER))
-                            GameFunctions.killPlayer(player, true, null);
-                    }
-                    GameFunctions.stopGame(serverWorld);
-                }
-            }
-
-            if (world.getTime() % 20 == 0) {
-                this.sync();
-            }
+        if (world.getTime() % 20 == 0) {
+            this.sync();
         }
     }
 
     private void tickCommon() {
         // fade and start / stop game
-        if (this.getGameStatus() == GameStatus.STARTING || this.getGameStatus() == GameStatus.STOPPING) {
-            this.setFade(fade + 1);
-
-            if (this.getFade() >= GameConstants.FADE_TIME + GameConstants.FADE_PAUSE) {
-                if (world instanceof ServerWorld serverWorld) {
-                    if (this.getGameStatus() == GameStatus.STARTING)
-                        GameFunctions.initializeGame(serverWorld);
-                    if (this.getGameStatus() == GameStatus.STOPPING)
-                        GameFunctions.finalizeGame(serverWorld);
-                }
-            }
-        } else if (this.getGameStatus() == GameStatus.ACTIVE || this.getGameStatus() == GameStatus.INACTIVE) {
+        if (this.getGameStatus() == GameStatus.ACTIVE || this.getGameStatus() == GameStatus.INACTIVE) {
             this.setFade(fade - 1);
+            return;
+        }
+
+        boolean starting = this.getGameStatus() == GameStatus.STARTING;
+        boolean stopping = this.getGameStatus() == GameStatus.STOPPING;
+        if (!starting && !stopping) {
+            return;
+        }
+
+        this.setFade(this.fade + 1);
+
+        if (this.getFade() < GameConstants.FADE_TIME + GameConstants.FADE_PAUSE) {
+            return;
+        }
+
+        if (world instanceof ServerWorld serverWorld) {
+            if (starting) {
+                GameFunctions.initializeGame(serverWorld);
+            }
+            if (stopping) {
+                GameFunctions.finalizeGame(serverWorld);
+            }
         }
     }
 
+    public void tickRunning(ServerWorld serverWorld) {
+        boolean civilianAlive = false;
+
+        for (ServerPlayerEntity player : serverWorld.getPlayers()) {
+            // kill players who fell off the train
+            if (GameFunctions.isPlayerAliveAndSurvival(player) && player.getY() < GameConstants.PLAY_AREA.minY) {
+                GameFunctions.killPlayer(player, false, player.getLastAttacker() instanceof PlayerEntity killerPlayer ? killerPlayer : null, TMM.id("fell_out_of_train"));
+            }
+
+            // passive money
+            Integer balanceToAdd = GameConstants.PASSIVE_MONEY_TICKER.apply(world.getTime());
+            if (balanceToAdd > 0) PlayerShopComponent.KEY.get(player).addToBalance(balanceToAdd);
+            if (this.isInnocent(player) && !GameFunctions.isPlayerEliminated(player)) civilianAlive = true;
+        }
+
+        // check killer win condition: kill count reached
+        GameFunctions.WinStatus winStatus = GameFunctions.WinStatus.NONE;
+
+        if (gameMode == GameMode.MURDER) {
+            // check killer win condition (kill count reached)
+            if (!civilianAlive) {
+                winStatus = GameFunctions.WinStatus.KILLERS;
+            }
+
+            // check passenger win condition (all killers are dead)
+            if (winStatus == GameFunctions.WinStatus.NONE) {
+                winStatus = GameFunctions.WinStatus.PASSENGERS;
+                for (UUID player : this.getAllWithRole(TMMRoles.KILLER)) {
+                    if (!GameFunctions.isPlayerEliminated(serverWorld.getPlayerByUuid(player))) {
+                        winStatus = GameFunctions.WinStatus.NONE;
+                    }
+                }
+            }
+        }
+
+        // check if last man standing in loose end
+        if (gameMode == GameMode.LOOSE_ENDS) {
+            int playersLeft = 0;
+            PlayerEntity lastPlayer = null;
+            for (PlayerEntity player : world.getPlayers()) {
+                if (GameFunctions.isPlayerAliveAndSurvival(player)) {
+                    playersLeft++;
+                    lastPlayer = player;
+                }
+            }
+
+            if (playersLeft <= 0) {
+                GameFunctions.stopGame(serverWorld);
+            }
+
+            if (playersLeft == 1) {
+                this.setLooseEndWinner(lastPlayer.getUuid());
+                winStatus = GameFunctions.WinStatus.LOOSE_END;
+            }
+        }
+
+        // check if out of time
+        if (winStatus == GameFunctions.WinStatus.NONE && !GameTimeComponent.KEY.get(serverWorld).hasTime()) {
+            winStatus = GameFunctions.WinStatus.TIME;
+        }
+
+        // stop game if ran out of time on discovery mode
+        if (gameMode == GameMode.DISCOVERY && winStatus == GameFunctions.WinStatus.TIME) {
+            GameFunctions.stopGame(serverWorld);
+        }
+
+        // game end on win and display
+        if (winStatus != GameFunctions.WinStatus.NONE && this.gameStatus == GameStatus.ACTIVE) {
+            GameRoundEndComponent.KEY.get(serverWorld).setRoundEndData(serverWorld.getPlayers(), winStatus);
+            for (ServerPlayerEntity player : serverWorld.getPlayers()) {
+                if (winStatus == GameFunctions.WinStatus.TIME && this.isRole(player, TMMRoles.KILLER)) {
+                    GameFunctions.killPlayer(player, true, null);
+                }
+            }
+            GameFunctions.stopGame(serverWorld);
+        }
+    }
 }

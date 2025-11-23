@@ -55,19 +55,37 @@ public class OrnamentBlock extends FacingBlock {
         boolean topRight = hit.x + hit.y > 1;
         boolean bottomRight = hit.x - hit.y > 0;
         boolean center = ctx.shouldCancelInteraction();
-        OrnamentShape shape = center ? OrnamentShape.CENTER :
-                topRight && bottomRight ? OrnamentShape.RIGHT :
-                        topRight ? OrnamentShape.TOP :
-                                !bottomRight ? OrnamentShape.LEFT : OrnamentShape.BOTTOM;
-        if (state.isOf(this)) {
-            OrnamentShape originalShape = state.get(SHAPE);
-            OrnamentShape newShape = originalShape.with(shape);
-            if (originalShape == newShape) return null;
-            return state.with(SHAPE, newShape);
+        OrnamentShape shape = getOrnamentShape(center, topRight, bottomRight);
+
+        if (!state.isOf(this)) {
+            return this.getDefaultState()
+                    .with(FACING, side)
+                    .with(SHAPE, shape);
         }
-        return this.getDefaultState()
-                .with(FACING, side)
-                .with(SHAPE, shape);
+
+        OrnamentShape originalShape = state.get(SHAPE);
+        OrnamentShape newShape = originalShape.with(shape);
+        if (originalShape == newShape) {
+            return null;
+        }
+
+        return state.with(SHAPE, newShape);
+    }
+
+    public static OrnamentShape getOrnamentShape(boolean center, boolean topRight, boolean bottomRight) {
+        if (center) {
+            return OrnamentShape.CENTER;
+        }
+        if (topRight && bottomRight) {
+            return OrnamentShape.RIGHT;
+        }
+        if (topRight) {
+            return OrnamentShape.TOP;
+        }
+        if (bottomRight) {
+            return OrnamentShape.BOTTOM;
+        }
+        return OrnamentShape.LEFT;
     }
 
     @Override
@@ -89,24 +107,26 @@ public class OrnamentBlock extends FacingBlock {
 
     @Override
     protected ItemActionResult onUseWithItem(ItemStack stack, BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
-        if (!player.shouldCancelInteraction() && !player.getMainHandStack().isOf(this.asItem())) {
-            Direction dir = state.get(FACING);
-            BlockPos behindBlockPos = pos.subtract(new Vec3i(dir.getOffsetX(), dir.getOffsetY(), dir.getOffsetZ()));
-            BlockState blockBehindOrnament = world.getBlockState(behindBlockPos);
-            return ((AbstractBlockInvoker) blockBehindOrnament.getBlock()).tmm$invokeOnUseWithItem(stack, blockBehindOrnament, world, behindBlockPos, player, hand, hit.withBlockPos(behindBlockPos));
+        if (player.shouldCancelInteraction() || player.getMainHandStack().isOf(this.asItem())) {
+            return super.onUseWithItem(stack, state, world, pos, player, hand, hit);
         }
-        return super.onUseWithItem(stack, state, world, pos, player, hand, hit);
+
+        Direction dir = state.get(FACING);
+        BlockPos behindBlockPos = pos.subtract(new Vec3i(dir.getOffsetX(), dir.getOffsetY(), dir.getOffsetZ()));
+        BlockState blockBehindOrnament = world.getBlockState(behindBlockPos);
+        return ((AbstractBlockInvoker) blockBehindOrnament.getBlock()).trainmurdermystery$invokeOnUseWithItem(stack, blockBehindOrnament, world, behindBlockPos, player, hand, hit.withBlockPos(behindBlockPos));
     }
 
     @Override
     protected ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit) {
-        if (!player.shouldCancelInteraction() && !player.getMainHandStack().isOf(this.asItem())) {
-            Direction dir = state.get(FACING);
-            BlockPos behindBlockPos = pos.subtract(new Vec3i(dir.getOffsetX(), dir.getOffsetY(), dir.getOffsetZ()));
-            BlockState blockBehindOrnament = world.getBlockState(behindBlockPos);
-                return ((AbstractBlockInvoker) blockBehindOrnament.getBlock()).tmm$invokeOnUse(blockBehindOrnament, world, behindBlockPos, player, hit.withBlockPos(behindBlockPos));
+        if (player.shouldCancelInteraction() || player.getMainHandStack().isOf(this.asItem())) {
+            return super.onUse(state, world, pos, player, hit);
         }
-        return super.onUse(state, world, pos, player, hit);
+
+        Direction dir = state.get(FACING);
+        BlockPos behindBlockPos = pos.subtract(new Vec3i(dir.getOffsetX(), dir.getOffsetY(), dir.getOffsetZ()));
+        BlockState blockBehindOrnament = world.getBlockState(behindBlockPos);
+        return ((AbstractBlockInvoker) blockBehindOrnament.getBlock()).trainmurdermystery$invokeOnUse(blockBehindOrnament, world, behindBlockPos, player, hit.withBlockPos(behindBlockPos));
     }
 
     @Override

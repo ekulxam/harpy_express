@@ -16,8 +16,8 @@ import org.spongepowered.asm.mixin.gen.Invoker;
 @Mixin(AbstractBlock.class)
 public interface AbstractBlockInvoker {
     @Invoker("onUse")
-    ActionResult tmm$invokeOnUse(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit);
+    ActionResult trainmurdermystery$invokeOnUse(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit);
 
     @Invoker("onUseWithItem")
-	ItemActionResult tmm$invokeOnUseWithItem(ItemStack stack, BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit);
+	ItemActionResult trainmurdermystery$invokeOnUseWithItem(ItemStack stack, BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit);
 }

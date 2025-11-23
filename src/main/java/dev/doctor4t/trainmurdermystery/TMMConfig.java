@@ -21,6 +21,7 @@ public class TMMConfig extends MidnightConfig {
 
         GameOptions gameOptions = MinecraftClient.getInstance().options;
         if (gameOptions != null) {
+            // It is possible for options to be null on startup - SkyNotTheLimit
             gameOptions.viewDistance.setValue(lockedRenderDistance);
         }
     }

@@ -7,8 +7,9 @@ import dev.doctor4t.trainmurdermystery.client.render.TMMRenderLayers;
 import dev.doctor4t.trainmurdermystery.client.util.TMMItemTooltips;
 import dev.doctor4t.trainmurdermystery.game.GameFunctions;
 import dev.doctor4t.trainmurdermystery.index.TMMDataComponentTypes;
-import dev.doctor4t.trainmurdermystery.util.GunShootPayload;
+import dev.doctor4t.trainmurdermystery.networking.GunShootC2SPayload;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.ProjectileUtil;
 import net.minecraft.item.ItemStack;
@@ -35,12 +36,15 @@ public class DerringerItem extends RevolverItem {
 
         if (world.isClient) {
             var collision = getGunTarget(user);
+
+            int targetId = -1;
             if (collision instanceof EntityHitResult entityHitResult) {
-                var target = entityHitResult.getEntity();
-                ClientPlayNetworking.send(new GunShootPayload(target.getId()));
-            } else {
-                ClientPlayNetworking.send(new GunShootPayload(-1));
+                Entity target = entityHitResult.getEntity();
+                targetId = target.getId();
             }
+
+            ClientPlayNetworking.send(new GunShootC2SPayload(targetId));
+
             if (!used) {
                 user.setPitch(user.getPitch() - 4);
                 spawnHandParticle();

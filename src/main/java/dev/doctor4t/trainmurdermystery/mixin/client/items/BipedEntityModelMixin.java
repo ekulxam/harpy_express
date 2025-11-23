@@ -33,20 +33,20 @@ public class BipedEntityModelMixin<T extends LivingEntity> {
 
     @Inject(method = "positionRightArm", at = @At("TAIL"))
     private void holdRevolverRightArm(T entity, CallbackInfo ci) {
-        if (tmm$isHoldingGun(entity) && entity.getMainArm() == Arm.RIGHT) {
-            tmm$holdGun(this.rightArm, this.leftArm, this.head, true);
+        if (trainmurdermystery$isHoldingGun(entity) && entity.getMainArm() == Arm.RIGHT) {
+            trainmurdermystery$holdGun(this.rightArm, this.leftArm, this.head, true);
         }
     }
 
     @Inject(method = "positionLeftArm", at = @At("TAIL"))
     private void holdRevolverLeftArm(T entity, CallbackInfo ci) {
-        if (tmm$isHoldingGun(entity) && entity.getMainArm() != Arm.RIGHT) {
-            tmm$holdGun(this.rightArm, this.leftArm, this.head, false);
+        if (trainmurdermystery$isHoldingGun(entity) && entity.getMainArm() != Arm.RIGHT) {
+            trainmurdermystery$holdGun(this.rightArm, this.leftArm, this.head, false);
         }
     }
 
     @Unique
-    private boolean tmm$isHoldingGun(T entity) {
+    private boolean trainmurdermystery$isHoldingGun(T entity) {
         ClientPlayerEntity player = MinecraftClient.getInstance().player;
         ItemStack stack = null;
         if (player != null) {
@@ -59,7 +59,7 @@ public class BipedEntityModelMixin<T extends LivingEntity> {
     }
 
     @Unique
-    private static void tmm$holdGun(ModelPart holdingArm, ModelPart otherArm, ModelPart head, boolean rightArmed) {
+    private static void trainmurdermystery$holdGun(ModelPart holdingArm, ModelPart otherArm, ModelPart head, boolean rightArmed) {
         ModelPart modelPart = rightArmed ? holdingArm : otherArm;
         modelPart.yaw = (rightArmed ? -0.3F : 0.3F) + head.yaw;
         modelPart.pitch = (float) (-Math.PI / 2) + head.pitch + 0.1F;

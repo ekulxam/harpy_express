@@ -18,8 +18,8 @@ import net.minecraft.world.World;
 import java.util.function.Supplier;
 
 public class TrainDoorBlock extends SmallDoorBlock {
-    public TrainDoorBlock(Supplier<BlockEntityType<SmallDoorBlockEntity>> typeSupplier, Settings settings) {
-        super(typeSupplier, settings);
+    public TrainDoorBlock(BlockEntityType<SmallDoorBlockEntity> type, Settings settings) {
+        super(type, settings);
     }
 
     @Override

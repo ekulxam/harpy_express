@@ -49,9 +49,9 @@ public abstract class PlayerEntityMixin extends LivingEntity {
     public abstract float getAttackCooldownProgress(float baseTime);
 
     @Unique
-    private float sprintingTicks;
+    private float trainmurdermystery$sprintingTicks;
     @Unique
-    private Scheduler.ScheduledTask poisonSleepTask;
+    private Scheduler.ScheduledTask trainmurdermystery$poisonSleepTask;
 
     protected PlayerEntityMixin(EntityType<? extends LivingEntity> entityType, World world) {
         super(entityType, world);
@@ -59,7 +59,7 @@ public abstract class PlayerEntityMixin extends LivingEntity {
 
 
     @ModifyReturnValue(method = "getMovementSpeed", at = @At("RETURN"))
-    public float tmm$overrideMovementSpeed(float original) {
+    public float overrideMovementSpeed(float original) {
         if (GameFunctions.isPlayerAliveAndSurvival((PlayerEntity) (Object) this)) {
             return this.isSprinting() ? 0.1f : 0.07f;
         } else {
@@ -68,16 +68,16 @@ public abstract class PlayerEntityMixin extends LivingEntity {
     }
 
     @Inject(method = "tickMovement", at = @At("HEAD"))
-    public void tmm$limitSprint(CallbackInfo ci) {
+    public void limitSprint(CallbackInfo ci) {
         GameWorldComponent gameComponent = GameWorldComponent.KEY.get(this.getWorld());
         if (GameFunctions.isPlayerAliveAndSurvival((PlayerEntity) (Object) this) && !(gameComponent != null && (gameComponent.isRole(this.getUuid(), TMMRoles.KILLER) || !gameComponent.isRunning() || gameComponent.getGameMode() == GameWorldComponent.GameMode.LOOSE_ENDS))) {
             if (this.isSprinting()) {
-                sprintingTicks = Math.max(sprintingTicks - 1, 0);
+                trainmurdermystery$sprintingTicks = Math.max(trainmurdermystery$sprintingTicks - 1, 0);
             } else {
-                sprintingTicks = Math.min(sprintingTicks + 0.25f, GameConstants.MAX_SPRINTING_TICKS);
+                trainmurdermystery$sprintingTicks = Math.min(trainmurdermystery$sprintingTicks + 0.25f, GameConstants.MAX_SPRINTING_TICKS);
             }
 
-            if (sprintingTicks <= 0) {
+            if (trainmurdermystery$sprintingTicks <= 0) {
                 this.setSprinting(false);
             }
         }
@@ -101,7 +101,7 @@ public abstract class PlayerEntityMixin extends LivingEntity {
     }
 
     @Inject(method = "eatFood", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/player/HungerManager;eat(Lnet/minecraft/component/type/FoodComponent;)V", shift = At.Shift.AFTER))
-    private void tmm$poisonedFoodEffect(@NotNull World world, ItemStack stack, FoodComponent foodComponent, CallbackInfoReturnable<ItemStack> cir) {
+    private void poisonedFoodEffect(@NotNull World world, ItemStack stack, FoodComponent foodComponent, CallbackInfoReturnable<ItemStack> cir) {
         if (world.isClient) return;
         String poisoner = stack.getOrDefault(TMMDataComponentTypes.POISONER, null);
         if (poisoner != null) {
@@ -115,20 +115,20 @@ public abstract class PlayerEntityMixin extends LivingEntity {
     }
 
     @Inject(method = "wakeUp(ZZ)V", at = @At("HEAD"))
-    private void tmm$poisonSleep(boolean skipSleepTimer, boolean updateSleepingPlayers, CallbackInfo ci) {
-        if (this.poisonSleepTask != null) {
-            this.poisonSleepTask.cancel();
-            this.poisonSleepTask = null;
+    private void poisonSleep(boolean skipSleepTimer, boolean updateSleepingPlayers, CallbackInfo ci) {
+        if (this.trainmurdermystery$poisonSleepTask != null) {
+            this.trainmurdermystery$poisonSleepTask.cancel();
+            this.trainmurdermystery$poisonSleepTask = null;
         }
     }
 
     @Inject(method = "trySleep", at = @At("TAIL"))
-    private void tmm$poisonSleepMessage(BlockPos pos, CallbackInfoReturnable<Either<PlayerEntity.SleepFailureReason, Unit>> cir) {
+    private void poisonSleepMessage(BlockPos pos, CallbackInfoReturnable<Either<PlayerEntity.SleepFailureReason, Unit>> cir) {
         PlayerEntity self = (PlayerEntity) (Object) (this);
         if (cir.getReturnValue().right().isPresent() && self instanceof ServerPlayerEntity serverPlayer) {
-            if (this.poisonSleepTask != null) this.poisonSleepTask.cancel();
+            if (this.trainmurdermystery$poisonSleepTask != null) this.trainmurdermystery$poisonSleepTask.cancel();
 
-            this.poisonSleepTask = Scheduler.schedule(
+            this.trainmurdermystery$poisonSleepTask = Scheduler.schedule(
                     () -> PoisonUtils.bedPoison(serverPlayer),
                     40
             );
@@ -136,24 +136,24 @@ public abstract class PlayerEntityMixin extends LivingEntity {
     }
 
     @Inject(method = "canConsume(Z)Z", at = @At("HEAD"), cancellable = true)
-    private void tmm$allowEatingRegardlessOfHunger(boolean ignoreHunger, @NotNull CallbackInfoReturnable<Boolean> cir) {
+    private void allowEatingRegardlessOfHunger(boolean ignoreHunger, @NotNull CallbackInfoReturnable<Boolean> cir) {
         cir.setReturnValue(true);
     }
 
     @Inject(method = "eatFood", at = @At("HEAD"))
-    private void tmm$eat(World world, ItemStack stack, FoodComponent foodComponent, @NotNull CallbackInfoReturnable<ItemStack> cir) {
+    private void eat(World world, ItemStack stack, FoodComponent foodComponent, @NotNull CallbackInfoReturnable<ItemStack> cir) {
         if (!(stack.getItem() instanceof CocktailItem)) {
             PlayerMoodComponent.KEY.get(this).eatFood();
         }
     }
 
     @Inject(method = "writeCustomDataToNbt", at = @At("TAIL"))
-    private void tmm$saveData(NbtCompound nbt, CallbackInfo ci) {
-        nbt.putFloat("sprintingTicks", this.sprintingTicks);
+    private void saveData(NbtCompound nbt, CallbackInfo ci) {
+        nbt.putFloat("sprintingTicks", this.trainmurdermystery$sprintingTicks);
     }
 
     @Inject(method = "readCustomDataFromNbt", at = @At("TAIL"))
-    private void tmm$readData(NbtCompound nbt, CallbackInfo ci) {
-        this.sprintingTicks = nbt.getFloat("sprintingTicks");
+    private void readData(NbtCompound nbt, CallbackInfo ci) {
+        this.trainmurdermystery$sprintingTicks = nbt.getFloat("sprintingTicks");
     }
 }

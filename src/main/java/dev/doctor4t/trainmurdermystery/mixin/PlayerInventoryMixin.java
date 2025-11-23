@@ -18,7 +18,7 @@ public class PlayerInventoryMixin {
     public PlayerEntity player;
 
     @WrapMethod(method = "scrollInHotbar")
-    private void tmm$invalid(double scrollAmount, @NotNull Operation<Void> original) {
+    private void invalid(double scrollAmount, @NotNull Operation<Void> original) {
         int oldSlot = this.player.getInventory().selectedSlot;
         original.call(scrollAmount);
         PlayerPsychoComponent component = PlayerPsychoComponent.KEY.get(this.player);

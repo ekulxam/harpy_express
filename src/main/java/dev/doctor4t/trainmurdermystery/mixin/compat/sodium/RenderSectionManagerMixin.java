@@ -16,7 +16,7 @@ public class RenderSectionManagerMixin {
             at = @At("HEAD"),
             remap = false,
             cancellable = true)
-    private void tmm$forceNotUseOcclusionCulling(Camera camera, boolean spectator, CallbackInfoReturnable<Boolean> cir) {
+    private void forceNotUseOcclusionCulling(Camera camera, boolean spectator, CallbackInfoReturnable<Boolean> cir) {
         if (TMMClient.isTrainMoving()) {
             cir.setReturnValue(false);
         }
@@ -26,7 +26,7 @@ public class RenderSectionManagerMixin {
             at = @At(value = "FIELD",
                     target = "Lnet/caffeinemc/mods/sodium/client/gui/SodiumGameOptions$PerformanceSettings;useFogOcclusion:Z"),
             remap = false)
-    private boolean tmm$forceNotUseFogOcclusion(boolean original) {
+    private boolean forceNotUseFogOcclusion(boolean original) {
         if (TMMClient.isTrainMoving()) {
             return false;
         }

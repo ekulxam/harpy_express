@@ -51,15 +51,8 @@ public abstract class ClientWorldMixin extends World {
     @Mutable
     private static Set<Item> BLOCK_MARKER_ITEMS;
 
-    @Inject(method = "<init>", at = @At("TAIL"))
-    public void tmm$addCustomBlockMarkers(ClientPlayNetworkHandler networkHandler, ClientWorld.Properties properties, RegistryKey registryRef, RegistryEntry dimensionTypeEntry, int loadDistance, int simulationDistance, Supplier profiler, WorldRenderer worldRenderer, boolean debugWorld, long seed, CallbackInfo ci) {
-        BLOCK_MARKER_ITEMS = new HashSet<>(BLOCK_MARKER_ITEMS);
-        BLOCK_MARKER_ITEMS.add(TMMBlocks.BARRIER_PANEL.asItem());
-        BLOCK_MARKER_ITEMS.add(TMMBlocks.LIGHT_BARRIER.asItem());
-    }
-
     @Inject(method = "tick", at = @At("TAIL"))
-    public void tmm$addSnowflakes(BooleanSupplier shouldKeepTicking, CallbackInfo ci) {
+    public void addSnowflakes(BooleanSupplier shouldKeepTicking, CallbackInfo ci) {
         if (TMMClient.isTrainMoving() && TMMClient.getTrainComponent().isSnowing()) {
             ClientPlayerEntity player = client.player;
             Random random = player.getRandom();
@@ -71,5 +64,12 @@ public abstract class ClientWorldMixin extends World {
                 }
             }
         }
+    }
+
+    static {
+        Set<Item> blockMarkerItems = new HashSet<>(BLOCK_MARKER_ITEMS);
+        blockMarkerItems.add(TMMBlocks.BARRIER_PANEL.asItem());
+        blockMarkerItems.add(TMMBlocks.LIGHT_BARRIER.asItem());
+        BLOCK_MARKER_ITEMS = Set.copyOf(blockMarkerItems);
     }
 }

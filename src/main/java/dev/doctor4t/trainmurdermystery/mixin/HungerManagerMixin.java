@@ -20,7 +20,7 @@ public class HungerManagerMixin {
     private float exhaustion;
 
     @Inject(method = "update", at = @At("HEAD"))
-    public void tmm$overrideFood(PlayerEntity player, CallbackInfo ci) {
+    public void overrideFood(PlayerEntity player, CallbackInfo ci) {
         this.foodLevel = 20;
         this.saturationLevel = 0;
         this.exhaustion = 0;

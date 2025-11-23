@@ -28,8 +28,10 @@ public class MinecraftClientMixin {
     public ClientPlayerEntity player;
 
     @ModifyReturnValue(method = "hasOutline", at = @At("RETURN"))
-    public boolean tmm$hasInstinctOutline(boolean original, @Local(argsOnly = true) Entity entity) {
-        if (TMMClient.getInstinctHighlight(entity) != -1) return true;
+    public boolean hasInstinctOutline(boolean original, @Local(argsOnly = true) Entity entity) {
+        if (TMMClient.getInstinctHighlight(entity) != -1) {
+            return true;
+        }
         return original;
     }
 
@@ -38,12 +40,12 @@ public class MinecraftClientMixin {
                     value = "INVOKE",
                     target = "Lnet/minecraft/client/render/item/HeldItemRenderer;resetEquipProgress(Lnet/minecraft/util/Hand;)V"
             ))
-    private boolean tmm$cancelRevolverUpdateAnimation(HeldItemRenderer instance, Hand hand) {
+    private boolean cancelRevolverUpdateAnimation(HeldItemRenderer instance, Hand hand) {
         return !MinecraftClient.getInstance().player.getStackInHand(hand).isIn(TMMItemTags.GUNS);
     }
 
     @WrapOperation(method = "handleInputEvents", at = @At(value = "FIELD", target = "Lnet/minecraft/entity/player/PlayerInventory;selectedSlot:I"))
-    private void tmm$invalid(@NotNull PlayerInventory instance, int value, Operation<Void> original) {
+    private void invalid(@NotNull PlayerInventory instance, int value, Operation<Void> original) {
         int oldSlot = instance.selectedSlot;
         PlayerPsychoComponent component = PlayerPsychoComponent.KEY.get(instance.player);
         if (component.getPsychoTicks() <= 0) {

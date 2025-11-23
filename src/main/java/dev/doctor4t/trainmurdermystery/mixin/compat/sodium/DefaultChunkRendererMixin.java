@@ -33,9 +33,9 @@ import java.nio.ByteBuffer;
 @Mixin(value = DefaultChunkRenderer.class)
 public abstract class DefaultChunkRendererMixin {
     @Unique
-    private static ByteBuffer tmm_buffer = MemoryUtil.memAlloc(RenderRegion.REGION_SIZE * 16);
+    private static ByteBuffer trainmurdermystery$buffer = MemoryUtil.memAlloc(RenderRegion.REGION_SIZE * 16);
     @Unique
-    private static GlMutableBuffer glBuffer;
+    private static GlMutableBuffer trainmurdermystery$glBuffer;
 
     @ModifyExpressionValue(
             method = "render",
@@ -45,7 +45,7 @@ public abstract class DefaultChunkRendererMixin {
             ),
             remap = false
     )
-    private boolean tmm$disable_culling(boolean original) {
+    private boolean disable_culling(boolean original) {
         if (TMMClient.isTrainMoving()) {
             return false;
         }
@@ -63,10 +63,10 @@ public abstract class DefaultChunkRendererMixin {
                                          CallbackInfo ci,
                                          @Local(ordinal = 0) ChunkShaderInterface shader,
                                          @Local(ordinal = 0) RenderRegion region) {
-        glBuffer = commandList.createMutableBuffer();
-        commandList.uploadData(glBuffer, tmm_buffer, GlBufferUsage.STREAM_DRAW);
+        trainmurdermystery$glBuffer = commandList.createMutableBuffer();
+        commandList.uploadData(trainmurdermystery$glBuffer, trainmurdermystery$buffer, GlBufferUsage.STREAM_DRAW);
 
-        ((SodiumShaderInterface) shader).tmm$set(glBuffer);
+        ((SodiumShaderInterface) shader).trainmurdermystery$set(trainmurdermystery$glBuffer);
     }
 
     @Inject(method = "render", at = @At(value = "INVOKE",
@@ -79,16 +79,16 @@ public abstract class DefaultChunkRendererMixin {
                                         TerrainRenderPass renderPass,
                                         CameraTransform camera,
                                         CallbackInfo ci) {
-        MemoryUtil.memFree(tmm_buffer);
-        commandList.deleteBuffer(glBuffer);
-        tmm_buffer = null;
+        MemoryUtil.memFree(trainmurdermystery$buffer);
+        commandList.deleteBuffer(trainmurdermystery$glBuffer);
+        trainmurdermystery$buffer = null;
     }
 
     @Inject(method = "fillCommandBuffer",
             at = @At(value = "INVOKE",
                     target = "Lnet/caffeinemc/mods/sodium/client/render/chunk/data/SectionRenderDataUnsafe;getSliceMask(J)I"),
             remap = false)
-    private static void tmm$offsetScenery(
+    private static void offsetScenery(
             MultiDrawBatch batch,
             RenderRegion region,
             SectionRenderDataStorage renderDataStorage,
@@ -99,12 +99,12 @@ public abstract class DefaultChunkRendererMixin {
             CallbackInfo ci,
             @Local(name = "sectionIndex") int sectionIndex
     ) {
-        if (tmm_buffer == null) {
-            tmm_buffer = MemoryUtil.memAlloc(RenderRegion.REGION_SIZE * 16);
+        if (trainmurdermystery$buffer == null) {
+            trainmurdermystery$buffer = MemoryUtil.memAlloc(RenderRegion.REGION_SIZE * 16);
         }
-        tmm_buffer.putFloat(sectionIndex * 16, 0);
-        tmm_buffer.putFloat(sectionIndex * 16 + 4, 0);
-        tmm_buffer.putFloat(sectionIndex * 16 + 8, 0);
+        trainmurdermystery$buffer.putFloat(sectionIndex * 16, 0);
+        trainmurdermystery$buffer.putFloat(sectionIndex * 16 + 4, 0);
+        trainmurdermystery$buffer.putFloat(sectionIndex * 16 + 8, 0);
 
         if (TMMClient.isTrainMoving()) {
             float trainSpeed = TMMClient.getTrainSpeed();
@@ -149,9 +149,9 @@ public abstract class DefaultChunkRendererMixin {
             finalY = (blockPos.getY() - finalY) - camera.fracY;
             finalZ = (blockPos.getZ() - finalZ) - camera.fracZ;
 
-            tmm_buffer.putFloat(sectionIndex * 16, -finalX);
-            tmm_buffer.putFloat(sectionIndex * 16 + 4, -finalY);
-            tmm_buffer.putFloat(sectionIndex * 16 + 8, -finalZ);
+            trainmurdermystery$buffer.putFloat(sectionIndex * 16, -finalX);
+            trainmurdermystery$buffer.putFloat(sectionIndex * 16 + 4, -finalY);
+            trainmurdermystery$buffer.putFloat(sectionIndex * 16 + 8, -finalZ);
         }
     }
 }

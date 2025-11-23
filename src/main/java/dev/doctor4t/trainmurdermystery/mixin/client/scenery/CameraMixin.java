@@ -36,15 +36,15 @@ public abstract class CameraMixin {
     public abstract float getPitch();
 
     @Unique
-    private static final PerlinNoiseSampler tmm$sampler = new PerlinNoiseSampler(Random.create());
+    private static final PerlinNoiseSampler trainmurdermystery$SAMPLER = new PerlinNoiseSampler(Random.create());
 
     @Unique
-    private static float tmm$randomizeOffset(int offset) {
+    private static float trainmurderymystery$randomizeOffset(int offset) {
         float intensity = 0.2f;
 
         float min = -intensity * 2;
         float max = intensity * 2;
-        float sampled = (float) tmm$sampler.sample((MinecraftClient.getInstance().world.getTime() % 24000L + MinecraftClient.getInstance().getRenderTickCounter().getTickDelta(false)) / intensity, offset, 0) * 1.5f;
+        float sampled = (float) trainmurdermystery$SAMPLER.sample((MinecraftClient.getInstance().world.getTime() % 24000L + MinecraftClient.getInstance().getRenderTickCounter().getTickDelta(false)) / intensity, offset, 0) * 1.5f;
         return min >= max ? min : sampled * max;
     }
 
@@ -55,6 +55,10 @@ public abstract class CameraMixin {
         }
 
         ClientPlayerEntity player = MinecraftClient.getInstance().player;
+        if (player == null) {
+            return;
+        }
+
         int age = player.age;
         float v = (1 + (1 - TMMClient.moodComponent.getMood())) * 2.5f;
         float amplitude = .0025f;
@@ -68,8 +72,8 @@ public abstract class CameraMixin {
             strength = 1f;
 
             if (TMM.isExposedToWind(player)) {
-                yawOffset = 1.5f * tmm$randomizeOffset(10);
-                pitchOffset = 1.5f * tmm$randomizeOffset(-10);
+                yawOffset = 1.5f * trainmurderymystery$randomizeOffset(10);
+                pitchOffset = 1.5f * trainmurderymystery$randomizeOffset(-10);
             }
         }
 

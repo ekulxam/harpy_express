@@ -15,8 +15,9 @@ import org.spongepowered.asm.mixin.injection.ModifyVariable;
 
 @Mixin(LightmapTextureManager.class)
 public abstract class TrueDarknessLightmapTextureManagerMixin {
+    // can this be removed? - SkyNotTheLimit
     @WrapOperation(method = "update", at = @At(value = "INVOKE", target = "Lorg/joml/Vector3f;lerp(Lorg/joml/Vector3fc;F)Lorg/joml/Vector3f;", ordinal = 0))
-    private Vector3f tmm$fuckYourBlueAssHueMojang(Vector3f instance, Vector3fc other, float t, Operation<Vector3f> original) {
+    private Vector3f fuckYourBlueAssHueMojang(Vector3f instance, Vector3fc other, float t, Operation<Vector3f> original) {
         MinecraftClient client = MinecraftClient.getInstance();
         ClientWorld world = client.world;
 
@@ -24,19 +25,20 @@ public abstract class TrueDarknessLightmapTextureManagerMixin {
     }
 
     @WrapOperation(method = "update", at = @At(value = "INVOKE", target = "Lorg/joml/Vector3f;lerp(Lorg/joml/Vector3fc;F)Lorg/joml/Vector3f;", ordinal = 6))
-    private Vector3f tmm$trueDarknessAndSunLight(Vector3f instance, Vector3fc other, float t, Operation<Vector3f> original) {
+    private Vector3f trueDarknessAndSunLight(Vector3f instance, Vector3fc other, float t, Operation<Vector3f> original) {
         MinecraftClient client = MinecraftClient.getInstance();
         ClientWorld world = client.world;
 
         if (client.player != null && world != null) {
-            return original.call(instance, new Vector3f(.75f, .75f, .75f), MathHelper.lerp(MinecraftClient.getInstance().getRenderTickCounter().getTickDelta(false), TMMClient.prevInstinctLightLevel, TMMClient.instinctLightLevel));
+            other = new Vector3f(.75f, .75f, .75f);
+            t = MathHelper.lerp(MinecraftClient.getInstance().getRenderTickCounter().getTickDelta(false), TMMClient.prevInstinctLightLevel, TMMClient.instinctLightLevel);
         }
 
         return original.call(instance, other, t);
     }
 
     @ModifyVariable(method = "update", at = @At(value = "STORE"), ordinal = 2)
-    private float tmm$keepSkylight(float value) {
+    private float keepSkylight(float value) {
         return value;
     }
 }

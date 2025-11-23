@@ -1,5 +1,6 @@
 package dev.doctor4t.trainmurdermystery.item;
 
+import dev.doctor4t.trainmurdermystery.TMM;
 import dev.doctor4t.trainmurdermystery.game.GameFunctions;
 import dev.doctor4t.trainmurdermystery.index.TMMSounds;
 import dev.doctor4t.trainmurdermystery.networking.KnifeStabC2SPayload;
@@ -11,6 +12,7 @@ import net.minecraft.entity.projectile.ProjectileUtil;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Hand;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.TypedActionResult;
 import net.minecraft.util.UseAction;
 import net.minecraft.util.hit.EntityHitResult;
@@ -19,6 +21,7 @@ import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
 
 public class KnifeItem extends Item {
+    public static final Identifier KNOCKBACK_MODIFIER_ID = TMM.id("knife_knockback_modifier");
     public KnifeItem(Settings settings) {
         super(settings);
     }

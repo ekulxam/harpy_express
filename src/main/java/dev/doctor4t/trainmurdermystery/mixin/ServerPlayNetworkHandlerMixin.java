@@ -17,7 +17,7 @@ public class ServerPlayNetworkHandlerMixin {
     public ServerPlayerEntity player;
 
     @WrapMethod(method = "onUpdateSelectedSlot")
-    private void tmm$invalid(UpdateSelectedSlotC2SPacket packet, @NotNull Operation<Void> original) {
+    private void invalid(UpdateSelectedSlotC2SPacket packet, @NotNull Operation<Void> original) {
         PlayerPsychoComponent component = PlayerPsychoComponent.KEY.get(this.player);
         if (component.getPsychoTicks() > 0 && !this.player.getInventory().getStack(packet.getSelectedSlot()).isOf(TMMItems.BAT)) {
             return;

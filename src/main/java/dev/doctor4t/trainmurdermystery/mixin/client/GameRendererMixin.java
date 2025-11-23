@@ -20,8 +20,9 @@ public class GameRendererMixin {
 
     @WrapOperation(method = "shouldRenderBlockOutline", at = @At(value = "FIELD", target = "Lnet/minecraft/entity/player/PlayerAbilities;allowModifyWorld:Z"))
     public boolean useOnBlock(PlayerAbilities instance, Operation<Boolean> original) {
-        if (this.client.getCameraEntity() instanceof LivingEntity entity && entity.getMainHandStack().getItem() instanceof AdventureUsable)
+        if (this.client.getCameraEntity() instanceof LivingEntity entity && entity.getMainHandStack().getItem() instanceof AdventureUsable) {
             return true;
+        }
         return original.call(instance);
     }
 }

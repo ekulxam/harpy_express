@@ -19,25 +19,27 @@ import java.util.UUID;
 @Mixin(PlayerEntityRenderer.class)
 public class PlayerEntityRendererMixin {
     @Inject(method = "getArmPose", at = @At("TAIL"), cancellable = true)
-    private static void tmm$customArmPose(AbstractClientPlayerEntity player,
-                                          Hand hand, CallbackInfoReturnable<BipedEntityModel.ArmPose> cir) {
-        if (player.getStackInHand(hand).isOf(TMMItems.BAT))
+    private static void customArmPose(AbstractClientPlayerEntity player, Hand hand, CallbackInfoReturnable<BipedEntityModel.ArmPose> cir) {
+        if (player.getStackInHand(hand).isOf(TMMItems.BAT)) {
             cir.setReturnValue(BipedEntityModel.ArmPose.CROSSBOW_CHARGE);
+        }
     }
 
     @ModifyExpressionValue(method = "getArmPose", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/network/AbstractClientPlayerEntity;getStackInHand(Lnet/minecraft/util/Hand;)Lnet/minecraft/item/ItemStack;"))
-    private static ItemStack tmm$changeNoteAndPsychosisItemsArmPos(ItemStack original, AbstractClientPlayerEntity player, Hand hand) {
-        if (hand.equals(Hand.MAIN_HAND)) {
-            if (original.isOf(TMMItems.NOTE)) {
-                return ItemStack.EMPTY;
-            }
+    private static ItemStack changeNoteAndPsychosisItemsArmPos(ItemStack original, AbstractClientPlayerEntity player, Hand hand) {
+        if (!Hand.MAIN_HAND.equals(hand)) {
+            return original;
+        }
 
-            if (TMMClient.moodComponent != null && TMMClient.moodComponent.isLowerThanMid()) { // make sure it's only the main hand item that's being replaced
-                HashMap<UUID, ItemStack> psychosisItems = TMMClient.moodComponent.getPsychosisItems();
-                UUID uuid = player.getUuid();
-                if (psychosisItems.containsKey(uuid)) {
-                    return psychosisItems.get(uuid);
-                }
+        if (original.isOf(TMMItems.NOTE)) {
+            return ItemStack.EMPTY;
+        }
+
+        if (TMMClient.moodComponent != null && TMMClient.moodComponent.isLowerThanMid()) { // make sure it's only the main hand item that's being replaced
+            HashMap<UUID, ItemStack> psychosisItems = TMMClient.moodComponent.getPsychosisItems();
+            UUID uuid = player.getUuid();
+            if (psychosisItems.containsKey(uuid)) {
+                return psychosisItems.get(uuid);
             }
         }
 

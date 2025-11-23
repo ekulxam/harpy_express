@@ -25,7 +25,7 @@ import java.util.Map;
 @Mixin(EntityRenderDispatcher.class)
 public class EntityRendererDispatchMixin {
     @Unique
-    private static final Map<SkinTextures.Model, EntityRendererFactory<PlayerBodyEntity>> PLAYER_BODY_RENDERER_FACTORIES = Map.of(
+    private static final Map<SkinTextures.Model, EntityRendererFactory<PlayerBodyEntity>> trainmurdermystery$PLAYER_BODY_RENDERER_FACTORIES = Map.of(
             SkinTextures.Model.WIDE,
             context -> new PlayerBodyEntityRenderer<>(context, false),
             SkinTextures.Model.SLIM,
@@ -33,31 +33,33 @@ public class EntityRendererDispatchMixin {
     );
 
     @Unique
-    private Map<SkinTextures.Model, EntityRenderer<? extends PlayerBodyEntity>> bodyModelRenderers = Map.of();
+    private Map<SkinTextures.Model, EntityRenderer<? extends PlayerBodyEntity>> trainmurdermystery$bodyModelRenderers = Map.of();
 
     @Inject(method = "reload", at = @At("TAIL"))
     public void reload(ResourceManager manager, CallbackInfo ci, @Local EntityRendererFactory.Context context) {
-        this.bodyModelRenderers = reloadPlayerBodyRenderers(context);
+        this.trainmurdermystery$bodyModelRenderers = trainmurdermystery$reloadPlayerBodyRenderers(context);
     }
 
     @Inject(method = "getRenderer", at = @At("HEAD"), cancellable = true)
-    public <T extends Entity> void tmm$addPlayerBodyRenderer(T entity, CallbackInfoReturnable<EntityRenderer<? super T>> cir) {
-        if (entity instanceof PlayerBodyEntity body) {
-            PlayerListEntry playerListEntry = TMMClient.PLAYER_ENTRIES_CACHE.get(body.getPlayerUuid());
-            if (playerListEntry == null) {
-                cir.setReturnValue((EntityRenderer<? super T>) this.bodyModelRenderers.get(SkinTextures.Model.WIDE));
-            } else {
-                SkinTextures.Model model = playerListEntry.getSkinTextures().model();
-                EntityRenderer<? extends PlayerBodyEntity> entityRenderer = this.bodyModelRenderers.get(model);
-                cir.setReturnValue((EntityRenderer<? super T>) (entityRenderer != null ? entityRenderer : (EntityRenderer) this.bodyModelRenderers.get(SkinTextures.Model.WIDE)));
-            }
+    public <T extends Entity> void addPlayerBodyRenderer(T entity, CallbackInfoReturnable<EntityRenderer<? super T>> cir) {
+        if (!(entity instanceof PlayerBodyEntity body)) {
+            return;
         }
+        PlayerListEntry playerListEntry = TMMClient.PLAYER_ENTRIES_CACHE.get(body.getPlayerUuid());
+        if (playerListEntry == null) {
+            cir.setReturnValue((EntityRenderer<? super T>) this.trainmurdermystery$bodyModelRenderers.get(SkinTextures.Model.WIDE));
+            return;
+        }
+        SkinTextures.Model model = playerListEntry.getSkinTextures().model();
+        EntityRenderer<? extends PlayerBodyEntity> entityRenderer = this.trainmurdermystery$bodyModelRenderers.get(model);
+        //noinspection rawtypes
+        cir.setReturnValue((EntityRenderer<? super T>) (entityRenderer != null ? entityRenderer : (EntityRenderer) this.trainmurdermystery$bodyModelRenderers.get(SkinTextures.Model.WIDE)));
     }
 
     @Unique
-    private static Map<SkinTextures.Model, EntityRenderer<? extends PlayerBodyEntity>> reloadPlayerBodyRenderers(EntityRendererFactory.Context ctx) {
+    private static Map<SkinTextures.Model, EntityRenderer<? extends PlayerBodyEntity>> trainmurdermystery$reloadPlayerBodyRenderers(EntityRendererFactory.Context ctx) {
         ImmutableMap.Builder<SkinTextures.Model, EntityRenderer<? extends PlayerBodyEntity>> builder = ImmutableMap.builder();
-        PLAYER_BODY_RENDERER_FACTORIES.forEach((model, factory) -> {
+        trainmurdermystery$PLAYER_BODY_RENDERER_FACTORIES.forEach((model, factory) -> {
             try {
                 builder.put(model, factory.create(ctx));
             } catch (Exception var5) {

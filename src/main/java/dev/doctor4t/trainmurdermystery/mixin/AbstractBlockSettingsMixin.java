@@ -11,7 +11,7 @@ public class AbstractBlockSettingsMixin implements BlockSettingsAdditions {
     boolean collidable;
 
     @Override
-    public AbstractBlock.Settings tmm$setCollidable(boolean collidable) {
+    public AbstractBlock.Settings trainmurdermystery$setCollidable(boolean collidable) {
         this.collidable = collidable;
         return (AbstractBlock.Settings) (Object) this;
     }

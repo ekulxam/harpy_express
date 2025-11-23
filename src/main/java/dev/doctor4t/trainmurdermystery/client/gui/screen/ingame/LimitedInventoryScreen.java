@@ -23,7 +23,7 @@ import java.util.List;
 
 public class LimitedInventoryScreen extends LimitedHandledScreen<PlayerScreenHandler> {
     public static final Identifier BACKGROUND_TEXTURE = TMM.id("textures/gui/container/limited_inventory.png");
-    public static final @NotNull Identifier ID = TMM.id("textures/gui/game.png");
+    public static final Identifier ID = TMM.id("textures/gui/game.png");
     public final ClientPlayerEntity player;
 
     public LimitedInventoryScreen(@NotNull ClientPlayerEntity player) {

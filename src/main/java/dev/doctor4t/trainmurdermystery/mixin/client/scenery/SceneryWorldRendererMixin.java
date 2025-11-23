@@ -33,86 +33,90 @@ public class SceneryWorldRendererMixin {
                     target = "Lnet/minecraft/client/gl/ShaderProgram;bind()V",
                     shift = At.Shift.AFTER),
             cancellable = true)
-    private void tmm$renderScenery(RenderLayer renderLayer, double x, double y, double z, Matrix4f matrix4f, Matrix4f positionMatrix, CallbackInfo ci, @Local ObjectListIterator<ChunkBuilder.BuiltChunk> objectListIterator, @Local ShaderProgram shaderProgram) {
-        if (TMMClient.isTrainMoving()) {
-            GlUniform glUniform = shaderProgram.chunkOffset;
+    private void renderScenery(RenderLayer renderLayer, double x, double y, double z, Matrix4f matrix4f, Matrix4f positionMatrix, CallbackInfo ci, @Local ObjectListIterator<ChunkBuilder.BuiltChunk> objectListIterator, @Local ShaderProgram shaderProgram) {
+        if (!TMMClient.isTrainMoving()) {
+            return;
+        }
 
-            float trainSpeed = TMMClient.getTrainSpeed(); // in kmh
-            int chunkSize = 16;
-            int tileWidth = 15 * chunkSize;
-            int height = 116;
-            int tileLength = 32 * chunkSize;
-            int tileSize = tileLength * 3;
+        GlUniform glUniform = shaderProgram.chunkOffset;
 
-            float time = TMMClient.trainComponent.getTime() + client.getRenderTickCounter().getTickDelta(true);
+        float trainSpeed = TMMClient.getTrainSpeed(); // in kmh
+        int chunkSize = 16;
+        int tileWidth = 15 * chunkSize;
+        int height = 116;
+        int tileLength = 32 * chunkSize;
+        int tileSize = tileLength * 3;
 
-            boolean isTranslucent = renderLayer != RenderLayer.getTranslucent();
-            while (isTranslucent ? objectListIterator.hasNext() : objectListIterator.hasPrevious()) {
-                boolean tooFar = false;
+        float time = TMMClient.trainComponent.getTime() + client.getRenderTickCounter().getTickDelta(true);
 
-                ChunkPos chunkPos = new ChunkPos(client.cameraEntity.getBlockPos());
-                client.chunkCullingEnabled = false;
+        boolean isTranslucent = renderLayer != RenderLayer.getTranslucent();
+        while (isTranslucent ? objectListIterator.hasNext() : objectListIterator.hasPrevious()) {
+            boolean tooFar = false;
 
-                ChunkBuilder.BuiltChunk builtChunk2 = isTranslucent ? objectListIterator.next() : objectListIterator.previous();
-                if (!builtChunk2.getData().isEmpty(renderLayer)) {
-                    VertexBuffer vertexBuffer = builtChunk2.getBuffer(renderLayer);
-                    BlockPos blockPos = builtChunk2.getOrigin();
+            ChunkPos chunkPos = new ChunkPos(client.cameraEntity.getBlockPos());
+            client.chunkCullingEnabled = false;
 
-                    if (glUniform != null) {
-                        boolean trainSection = ChunkSectionPos.getSectionCoord(blockPos.getY()) >= 4;
-                        float v1 = (float) ((double) blockPos.getX() - x);
-                        float v2 = (float) ((double) blockPos.getY() - y);
-                        float v3 = (float) ((double) blockPos.getZ() - z);
+            ChunkBuilder.BuiltChunk builtChunk2 = isTranslucent ? objectListIterator.next() : objectListIterator.previous();
+            if (builtChunk2.getData().isEmpty(renderLayer)) {
+                continue;
+            }
 
-                        int zSection = blockPos.getZ() / chunkSize - chunkPos.z;
+            VertexBuffer vertexBuffer = builtChunk2.getBuffer(renderLayer);
+            BlockPos blockPos = builtChunk2.getOrigin();
 
-                        float finalX = v1;
-                        float finalY = v2;
-                        float finalZ = v3;
+            if (glUniform != null) {
+                boolean trainSection = ChunkSectionPos.getSectionCoord(blockPos.getY()) >= 4;
+                float v1 = (float) ((double) blockPos.getX() - x);
+                float v2 = (float) ((double) blockPos.getY() - y);
+                float v3 = (float) ((double) blockPos.getZ() - z);
 
-                        if (zSection <= -8) {
-                            finalX = ((v1 - tileLength + ((time) / 73.8f * trainSpeed)) % tileSize - tileSize / 2f);
-                            finalY = (v2 + height);
-                            finalZ = v3 + tileWidth;
-                        } else if (zSection >= 8) {
-                            finalX = ((v1 + tileLength + ((time) / 73.8f * trainSpeed)) % tileSize - tileSize / 2f);
-                            finalY = (v2 + height);
-                            finalZ = v3 - tileWidth;
-                        } else if (!trainSection) {
-                            finalX = ((v1 + ((time) / 73.8f * trainSpeed)) % tileSize - tileSize / 2f);
-                            finalY = (v2 + height);
-                            finalZ = v3;
-                        }
+                int zSection = blockPos.getZ() / chunkSize - chunkPos.z;
 
-                        if (Math.abs(finalX) < (TMMClient.trainComponent.getTimeOfDay() == TrainWorldComponent.TimeOfDay.SUNDOWN ? 320 : 160)) {
-                            glUniform.set(
-                                    finalX,
-                                    finalY,
-                                    finalZ
-                            );
-                            glUniform.upload();
-                        } else {
-                            tooFar = true;
-                        }
-                    }
+                float finalX = v1;
+                float finalY = v2;
+                float finalZ = v3;
 
-                    if (!tooFar) {
-                        vertexBuffer.bind();
-                        vertexBuffer.draw();
-                    }
+                if (zSection <= -8) {
+                    finalX = ((v1 - tileLength + ((time) / 73.8f * trainSpeed)) % tileSize - tileSize / 2f);
+                    finalY = (v2 + height);
+                    finalZ = v3 + tileWidth;
+                } else if (zSection >= 8) {
+                    finalX = ((v1 + tileLength + ((time) / 73.8f * trainSpeed)) % tileSize - tileSize / 2f);
+                    finalY = (v2 + height);
+                    finalZ = v3 - tileWidth;
+                } else if (!trainSection) {
+                    finalX = ((v1 + ((time) / 73.8f * trainSpeed)) % tileSize - tileSize / 2f);
+                    finalY = (v2 + height);
+                    finalZ = v3;
+                }
+
+                if (Math.abs(finalX) < (TMMClient.trainComponent.getTimeOfDay() == TrainWorldComponent.TimeOfDay.SUNDOWN ? 320 : 160)) {
+                    glUniform.set(
+                            finalX,
+                            finalY,
+                            finalZ
+                    );
+                    glUniform.upload();
+                } else {
+                    tooFar = true;
                 }
             }
 
-            if (glUniform != null) {
-                glUniform.set(0.0F, 0.0F, 0.0F);
+            if (!tooFar) {
+                vertexBuffer.bind();
+                vertexBuffer.draw();
             }
-
-            shaderProgram.unbind();
-            VertexBuffer.unbind();
-            this.client.getProfiler().pop();
-            renderLayer.endDrawing();
-
-            ci.cancel();
         }
+
+        if (glUniform != null) {
+            glUniform.set(0.0F, 0.0F, 0.0F);
+        }
+
+        shaderProgram.unbind();
+        VertexBuffer.unbind();
+        this.client.getProfiler().pop();
+        renderLayer.endDrawing();
+
+        ci.cancel();
     }
 }

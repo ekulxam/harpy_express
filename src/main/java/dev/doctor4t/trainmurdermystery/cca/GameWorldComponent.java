@@ -294,7 +294,7 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
         }
 
         if (ticksUntilNextResetAttempt-- == 0) {
-            if (serverWorld != null && GameFunctions.tryResetTrain(serverWorld) {
+            if (serverWorld != null && GameFunctions.tryResetTrain(serverWorld)) {
                 ticksUntilNextResetAttempt = 5;
             }
         }

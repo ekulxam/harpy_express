@@ -52,9 +52,9 @@ public class TMM implements ModInitializer {
         Reflection.initialize(TMMDataComponentTypes.class);
         TMMSounds.initialize();
         TMMEntities.initialize();
+        TMMBlockEntities.initialize();
         TMMBlocks.initialize();
         TMMItems.initialize();
-        TMMBlockEntities.initialize();
         TMMParticles.initialize();
 
         // Register command argument types

@@ -72,19 +72,23 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
+import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 
 import java.awt.Color;
 import java.util.*;
 
 public class TMMClient implements ClientModInitializer {
-    public static final Vec3d DUSK_BACKGROUND_COLOR = ;
+    public static final Vec3d DUSK_BACKGROUND_COLOR;
     private static float soundLevel = 0f;
     public static HandParticleManager handParticleManager;
     public static Map<PlayerEntity, Vec3d> particleMap;
     private static boolean prevGameRunning;
+    @Nullable
     public static GameWorldComponent gameComponent;
+    @Nullable
     public static TrainWorldComponent trainComponent;
+    @Nullable
     public static PlayerMoodComponent moodComponent;
 
     public static final Map<UUID, PlayerListEntry> PLAYER_ENTRIES_CACHE = Maps.newHashMap();

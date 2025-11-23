@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.injection.At;
 @Mixin(DedicatedPlayerManager.class)
 public class DedicatedPlayerManagerMixin {
     @WrapOperation(method = "<init>", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/dedicated/DedicatedPlayerManager;setViewDistance(I)V"))
-    public void tmm$forceServerViewDistance(DedicatedPlayerManager instance, int i, Operation<Void> original) {
+    public void forceServerViewDistance(DedicatedPlayerManager instance, int i, Operation<Void> original) {
         original.call(instance, 32);
     }
 }

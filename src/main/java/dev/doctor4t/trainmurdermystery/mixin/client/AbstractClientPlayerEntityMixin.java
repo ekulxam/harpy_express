@@ -1,5 +1,6 @@
 package dev.doctor4t.trainmurdermystery.mixin.client;
 
+import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.mojang.authlib.GameProfile;
 import dev.doctor4t.trainmurdermystery.cca.PlayerPoisonComponent;
 import dev.doctor4t.trainmurdermystery.util.PoisonUtils;
@@ -9,8 +10,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(AbstractClientPlayerEntity.class)
 public abstract class AbstractClientPlayerEntityMixin extends PlayerEntity {
@@ -18,9 +17,8 @@ public abstract class AbstractClientPlayerEntityMixin extends PlayerEntity {
         super(world, pos, yaw, gameProfile);
     }
 
-    @Inject(method = "getFovMultiplier", at = @At("RETURN"), cancellable = true)
-    private void tmm$fovPulse(CallbackInfoReturnable<Float> cir) {
-        float original = cir.getReturnValueF();
-        cir.setReturnValue(original * PoisonUtils.getFovMultiplier(1f, PlayerPoisonComponent.KEY.get(this)));
+    @ModifyReturnValue(method = "getFovMultiplier", at = @At("RETURN"))
+    private float fovPulse(float original) {
+        return original * PoisonUtils.getFovMultiplier(1f, PlayerPoisonComponent.KEY.get(this));
     }
 }

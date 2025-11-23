@@ -17,7 +17,7 @@ public abstract class KeyBindingMixin {
 
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     @Unique
-    private boolean tmm$shouldSuppressKey() {
+    private boolean trainmurdermystery$shouldSuppressKey() {
         if (TMMClient.isPlayerAliveAndInSurvival()) {
             GameOptions options = MinecraftClient.getInstance().options;
             return this.equals(options.swapHandsKey) ||
@@ -33,16 +33,16 @@ public abstract class KeyBindingMixin {
 
     @ModifyReturnValue(method = "wasPressed", at = @At("RETURN"))
     private boolean restrainWasPressedKeys(boolean original) {
-        return !this.tmm$shouldSuppressKey() && original;
+        return !this.trainmurdermystery$shouldSuppressKey() && original;
     }
 
     @ModifyReturnValue(method = "isPressed", at = @At("RETURN"))
     private boolean restrainIsPressedKeys(boolean original) {
-        return !this.tmm$shouldSuppressKey() && original;
+        return !this.trainmurdermystery$shouldSuppressKey() && original;
     }
 
     @ModifyReturnValue(method = "matchesKey", at = @At("RETURN"))
     private boolean restrainMatchesKey(boolean original) {
-        return !this.tmm$shouldSuppressKey() && original;
+        return !this.trainmurdermystery$shouldSuppressKey() && original;
     }
 }

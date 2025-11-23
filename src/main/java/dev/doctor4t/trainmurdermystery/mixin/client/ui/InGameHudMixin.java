@@ -34,12 +34,13 @@ public class InGameHudMixin {
     @Final
     private MinecraftClient client;
     @Unique
-    private static final Identifier TMM_HOTBAR_TEXTURE = TMM.id("hud/hotbar");
+    private static final Identifier trainmurdermystery$HOTBAR_TEXTURE = TMM.id("hud/hotbar");
     @Unique
-    private static final Identifier TMM_HOTBAR_SELECTION_TEXTURE = TMM.id("hud/hotbar_selection");
+    private static final Identifier trainmurdermystery$HOTBAR_SELECTION_TEXTURE = TMM.id("hud/hotbar_selection");
 
+    // Look into using Fabric HUD APIs? - SkyNotTheLimit
     @Inject(method = "renderMainHud", at = @At("TAIL"))
-    private void tmm$renderHud(DrawContext context, RenderTickCounter tickCounter, CallbackInfo ci) {
+    private void renderGameHud(DrawContext context, RenderTickCounter tickCounter, CallbackInfo ci) {
         if (TMMClient.trainComponent == null || !TMMClient.trainComponent.hasHud()) {
             return;
         }
@@ -61,60 +62,69 @@ public class InGameHudMixin {
     }
 
     @WrapMethod(method = "renderCrosshair")
-    private void tmm$renderHud(DrawContext context, RenderTickCounter tickCounter, Operation<Void> original) {
+    private void renderCrosshair(DrawContext context, RenderTickCounter tickCounter, Operation<Void> original) {
         if (!TMMClient.isPlayerAliveAndInSurvival()) {
             original.call(context, tickCounter);
             return;
         }
         ClientPlayerEntity player = this.client.player;
-        if (player == null) return;
+        if (player == null) {
+            return;
+        }
         CrosshairRenderer.renderCrosshair(this.client, player, context, tickCounter);
     }
 
     @WrapMethod(method = "renderStatusBars")
-    private void tmm$removeStatusBars(DrawContext context, Operation<Void> original) {
-        if (!TMMClient.isPlayerAliveAndInSurvival()) {
-            original.call(context);
+    private void removeStatusBars(DrawContext context, Operation<Void> original) {
+        if (TMMClient.isPlayerAliveAndInSurvival()) {
+            return;
         }
+        original.call(context);
     }
 
     @WrapMethod(method = "renderExperienceBar")
-    private void tmm$removeExperienceBar(DrawContext context, int x, Operation<Void> original) {
-        if (!TMMClient.isPlayerAliveAndInSurvival()) {
-            original.call(context, x);
+    private void removeExperienceBar(DrawContext context, int x, Operation<Void> original) {
+        if (TMMClient.isPlayerAliveAndInSurvival()) {
+            return;
         }
+        original.call(context, x);
     }
 
     @WrapMethod(method = "renderPlayerList")
-    private void tmm$removePlayerList(DrawContext context, RenderTickCounter tickCounter, Operation<Void> original) {
-        if (!TMMClient.isPlayerAliveAndInSurvival()) {
-            original.call(context, tickCounter);
+    private void removePlayerList(DrawContext context, RenderTickCounter tickCounter, Operation<Void> original) {
+        if (TMMClient.isPlayerAliveAndInSurvival()) {
+            return;
         }
+        original.call(context, tickCounter);
     }
 
     @WrapMethod(method = "renderExperienceLevel")
-    private void tmm$removeExperienceLevel(DrawContext context, RenderTickCounter tickCounter, Operation<Void> original) {
-        if (!TMMClient.isPlayerAliveAndInSurvival()) {
-            original.call(context, tickCounter);
+    private void removeExperienceLevel(DrawContext context, RenderTickCounter tickCounter, Operation<Void> original) {
+        if (TMMClient.isPlayerAliveAndInSurvival()) {
+            return;
         }
+        original.call(context, tickCounter);
     }
 
     @WrapOperation(method = "renderHotbar", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/DrawContext;drawGuiTexture(Lnet/minecraft/util/Identifier;IIII)V", ordinal = 0))
-    private void tmm$overrideHotbarTexture(DrawContext instance, Identifier texture, int x, int y, int width, int height, @NotNull Operation<Void> original) {
-        original.call(instance, TMMClient.isPlayerAliveAndInSurvival() ? TMM_HOTBAR_TEXTURE : texture, x, y, width, height);
+    private void overrideHotbarTexture(DrawContext instance, Identifier texture, int x, int y, int width, int height, @NotNull Operation<Void> original) {
+        original.call(instance, TMMClient.isPlayerAliveAndInSurvival() ? trainmurdermystery$HOTBAR_TEXTURE : texture, x, y, width, height);
     }
 
     @WrapOperation(method = "renderHotbar", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/DrawContext;drawGuiTexture(Lnet/minecraft/util/Identifier;IIII)V", ordinal = 1))
-    private void tmm$overrideHotbarSelectionTexture(DrawContext instance, Identifier texture, int x, int y, int width, int height, @NotNull Operation<Void> original) {
-        original.call(instance, TMMClient.isPlayerAliveAndInSurvival() ? TMM_HOTBAR_SELECTION_TEXTURE : texture, x, y, width, height);
+    private void overrideHotbarSelectionTexture(DrawContext instance, Identifier texture, int x, int y, int width, int height, @NotNull Operation<Void> original) {
+        original.call(instance, TMMClient.isPlayerAliveAndInSurvival() ? trainmurdermystery$HOTBAR_SELECTION_TEXTURE : texture, x, y, width, height);
     }
 
     @WrapMethod(method = "renderMiscOverlays")
-    private void tmm$moveSleepOverlayToUnderUI(DrawContext context, RenderTickCounter tickCounter, Operation<Void> original) {
-        // sleep overlay
+    private void moveSleepOverlayToUnderUI(DrawContext context, RenderTickCounter tickCounter, Operation<Void> original) {
         if (this.client.player == null || this.client.player.getSleepTimer() <= 0) {
+            // I would like to render other overlays when not sleeping (I think this is fine) - SkyNotTheLimit
+            original.call(context, tickCounter);
             return;
         }
+
+        // sleep overlay
         this.client.getProfiler().push("sleep");
 
         float f = (float) this.client.player.getSleepTimer();
@@ -133,18 +143,19 @@ public class InGameHudMixin {
     }
 
     @WrapMethod(method = "renderSleepOverlay")
-    private void tmm$removeSleepOverlayAndDoGameFade(DrawContext context, RenderTickCounter tickCounter, Operation<Void> original) {
-        if (TMMClient.gameComponent != null) {
-            // game start / stop fade in / out
-            float fadeIn = TMMClient.gameComponent.getFade();
-            if (fadeIn >= 0) {
-                this.client.getProfiler().push("tmmFade");
-                float fadeAlpha = MathHelper.lerp(Math.min(fadeIn / GameConstants.FADE_TIME, 1), 0f, 1f);
-                Color color = new Color(0f, 0f, 0f, fadeAlpha);
+    private void removeSleepOverlayAndDoGameFade(DrawContext context, RenderTickCounter tickCounter, Operation<Void> original) {
+        if (TMMClient.gameComponent == null) {
+            return;
+        }
+        // game start / stop fade in / out
+        float fadeIn = TMMClient.gameComponent.getFade();
+        if (fadeIn >= 0) {
+            this.client.getProfiler().push("tmmFade");
+            float fadeAlpha = MathHelper.lerp(Math.min(fadeIn / GameConstants.FADE_TIME, 1), 0f, 1f);
+            Color color = new Color(0f, 0f, 0f, fadeAlpha);
 
-                context.fill(RenderLayer.getGuiOverlay(), 0, 0, context.getScaledWindowWidth(), context.getScaledWindowHeight(), color.getRGB());
-                this.client.getProfiler().pop();
-            }
+            context.fill(RenderLayer.getGuiOverlay(), 0, 0, context.getScaledWindowWidth(), context.getScaledWindowHeight(), color.getRGB());
+            this.client.getProfiler().pop();
         }
     }
 }

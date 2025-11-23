@@ -371,7 +371,7 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
         for (ServerPlayerEntity player : serverWorld.getPlayers()) {
             // kill players who fell off the train
             if (GameFunctions.isPlayerAliveAndSurvival(player) && player.getY() < GameConstants.PLAY_AREA.minY) {
-                GameFunctions.killPlayer(player, false, player.getLastAttacker() instanceof PlayerEntity killerPlayer ? killerPlayer : null, GameConstants.DeathReasons.GENERIC);
+                GameFunctions.killPlayer(player, false, player.getLastAttacker() instanceof PlayerEntity killerPlayer ? killerPlayer : null, GameConstants.DeathReasons.FELL_OUT_OF_TRAIN);
             }
 
             // passive money

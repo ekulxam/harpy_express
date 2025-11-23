@@ -4,6 +4,7 @@ import dev.doctor4t.trainmurdermystery.TMM;
 import dev.doctor4t.trainmurdermystery.game.GameConstants;
 import dev.doctor4t.trainmurdermystery.index.TMMItems;
 import dev.doctor4t.trainmurdermystery.index.TMMSounds;
+import dev.doctor4t.trainmurdermystery.util.ShopEntry;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
@@ -50,18 +51,18 @@ public class PlayerShopComponent implements AutoSyncedComponent, ServerTickingCo
 
     public void tryBuy(int index) {
         if (index < 0 || index >= GameConstants.SHOP_ENTRIES.size()) return;
-        var entry = GameConstants.SHOP_ENTRIES.get(index);
-        if (FabricLoader.getInstance().isDevelopmentEnvironment() && this.balance < entry.price())
+        ShopEntry entry = GameConstants.SHOP_ENTRIES.get(index);
+        if (TMM.DEVELOPMENT && this.balance < entry.price())
             this.balance = entry.price() * 10;
         if (this.balance >= entry.price() && !this.player.getItemCooldownManager().isCoolingDown(entry.stack().getItem()) && entry.onBuy(this.player)) {
             this.balance -= entry.price();
-            if (this.player instanceof ServerPlayerEntity player) {
-                player.networkHandler.sendPacket(new PlaySoundS2CPacket(Registries.SOUND_EVENT.getEntry(TMMSounds.UI_SHOP_BUY), SoundCategory.PLAYERS, player.getX(), player.getY(), player.getZ(), 1.0f, 0.9f + this.player.getRandom().nextFloat() * 0.2f, player.getRandom().nextLong()));
+            if (this.player instanceof ServerPlayerEntity serverPlayer) {
+                serverPlayer.networkHandler.sendPacket(new PlaySoundS2CPacket(Registries.SOUND_EVENT.getEntry(TMMSounds.UI_SHOP_BUY), SoundCategory.PLAYERS, serverPlayer.getX(), serverPlayer.getY(), serverPlayer.getZ(), 1.0f, 0.9f + this.player.getRandom().nextFloat() * 0.2f, serverPlayer.getRandom().nextLong()));
             }
         } else {
             this.player.sendMessage(Text.literal("Purchase Failed").formatted(Formatting.DARK_RED), true);
-            if (this.player instanceof ServerPlayerEntity player) {
-                player.networkHandler.sendPacket(new PlaySoundS2CPacket(Registries.SOUND_EVENT.getEntry(TMMSounds.UI_SHOP_BUY_FAIL), SoundCategory.PLAYERS, player.getX(), player.getY(), player.getZ(), 1.0f, 0.9f + this.player.getRandom().nextFloat() * 0.2f, player.getRandom().nextLong()));
+            if (this.player instanceof ServerPlayerEntity serverPlayer) {
+                serverPlayer.networkHandler.sendPacket(new PlaySoundS2CPacket(Registries.SOUND_EVENT.getEntry(TMMSounds.UI_SHOP_BUY_FAIL), SoundCategory.PLAYERS, serverPlayer.getX(), serverPlayer.getY(), serverPlayer.getZ(), 1.0f, 0.9f + this.player.getRandom().nextFloat() * 0.2f, serverPlayer.getRandom().nextLong()));
             }
         }
         this.sync();

@@ -44,13 +44,14 @@ public class PlayerMoodComponent implements AutoSyncedComponent, ServerTickingCo
     private int nextTaskTimer = 0;
     private float mood = 1f;
     private final HashMap<UUID, ItemStack> psychosisItems = new HashMap<>();
+    private boolean dirty = false;
 
     public PlayerMoodComponent(PlayerEntity player) {
         this.player = player;
     }
 
-    public void sync() {
-        KEY.sync(this.player);
+    public void markDirty() {
+        this.dirty = true;
     }
 
     public void reset() {
@@ -59,36 +60,48 @@ public class PlayerMoodComponent implements AutoSyncedComponent, ServerTickingCo
         this.nextTaskTimer = GameConstants.TIME_TO_FIRST_TASK;
         this.psychosisItems.clear();
         this.setMood(1f);
-        this.sync();
+        this.markDirty();
     }
 
     @Override
     public void clientTick() {
-        if (!GameWorldComponent.KEY.get(this.player.getWorld()).isRunning() || !TMMClient.isPlayerAliveAndInSurvival())
+        if (!GameWorldComponent.KEY.get(this.player.getWorld()).isRunning() || !TMMClient.isPlayerAliveAndInSurvival()){
             return;
-        if (!this.tasks.isEmpty()) this.setMood(this.mood - this.tasks.size() * GameConstants.MOOD_DRAIN);
+        }
+        if (!this.tasks.isEmpty()) {
+            this.setMood(this.mood - this.tasks.size() * GameConstants.MOOD_DRAIN);
+        }
 
-        if (this.isLowerThanMid()) {
-            // imagine random items for players
-            for (var playerEntity : this.player.getWorld().getPlayers()) {
-                if (!playerEntity.equals(this.player) && this.player.getWorld().getRandom().nextInt(GameConstants.ITEM_PSYCHOSIS_REROLL_TIME) == 0) {
-                    this.psychosisItems.put(playerEntity.getUuid(), playerEntity.getRandom().nextFloat() < GameConstants.ITEM_PSYCHOSIS_CHANCE ? PSYCHOSIS_ITEM_POOL[playerEntity.getRandom().nextInt(PSYCHOSIS_ITEM_POOL.length)].getDefaultStack() : playerEntity.getMainHandStack());
-                }
+        if (!this.isLowerThanMid()) {
+            if (!this.psychosisItems.isEmpty()) {
+                this.psychosisItems.clear();
             }
-        } else {
-            if (!this.psychosisItems.isEmpty()) this.psychosisItems.clear();
+            return;
+        }
+
+        // imagine random items for players
+        for (PlayerEntity playerEntity : this.player.getWorld().getPlayers()) {
+            if (!playerEntity.equals(this.player) && this.player.getWorld().getRandom().nextInt(GameConstants.ITEM_PSYCHOSIS_REROLL_TIME) == 0) {
+                this.psychosisItems.put(playerEntity.getUuid(), playerEntity.getRandom().nextFloat() < GameConstants.ITEM_PSYCHOSIS_CHANCE ? PSYCHOSIS_ITEM_POOL[playerEntity.getRandom().nextInt(PSYCHOSIS_ITEM_POOL.length)].getDefaultStack() : playerEntity.getMainHandStack());
+            }
         }
     }
 
     @Override
     public void serverTick() {
-        var gameWorldComponent = GameWorldComponent.KEY.get(this.player.getWorld());
-        if (!gameWorldComponent.isRunning() || !GameFunctions.isPlayerAliveAndSurvival(this.player)) return;
-        if (!this.tasks.isEmpty()) this.setMood(this.mood - this.tasks.size() * GameConstants.MOOD_DRAIN);
-        var shouldSync = false;
+        GameWorldComponent gameWorldComponent = GameWorldComponent.KEY.get(this.player.getWorld());
+        if (!gameWorldComponent.isRunning() || !GameFunctions.isPlayerAliveAndSurvival(this.player)) {
+            return;
+        }
+
+        if (!this.tasks.isEmpty()) {
+            this.setMood(this.mood - this.tasks.size() * GameConstants.MOOD_DRAIN);
+        }
+
+        boolean shouldSync = false;
         this.nextTaskTimer--;
         if (this.nextTaskTimer <= 0) {
-            var task = this.generateTask();
+            TrainTask task = this.generateTask();
             if (task != null) {
                 this.tasks.put(task.getType(), task);
                 this.timesGotten.putIfAbsent(task.getType(), 1);
@@ -98,33 +111,38 @@ public class PlayerMoodComponent implements AutoSyncedComponent, ServerTickingCo
             this.nextTaskTimer = Math.max(this.nextTaskTimer, 2);
             shouldSync = true;
         }
-        var removals = new ArrayList<Task>();
-        for (var task : this.tasks.values()) {
+        ArrayList<Task> removals = new ArrayList<>();
+        for (TrainTask task : this.tasks.values()) {
             task.tick(this.player);
             if (task.isFulfilled(this.player)) {
                 removals.add(task.getType());
                 this.setMood(this.mood + GameConstants.MOOD_GAIN);
-                if (this.player instanceof ServerPlayerEntity player)
-                    ServerPlayNetworking.send(player, new TaskCompletePayload());
+                if (this.player instanceof ServerPlayerEntity serverPlayer){
+                    ServerPlayNetworking.send(serverPlayer, new TaskCompletePayload());
+                }
                 shouldSync = true;
             }
         }
-        for (var task : removals) this.tasks.remove(task);
-        if (shouldSync) this.sync();
+        for (Task task : removals) {
+            this.tasks.remove(task);
+        }
+        if (shouldSync) {
+            KEY.sync(this.player);
+        }
     }
 
     private @Nullable TrainTask generateTask() {
         if (!this.tasks.isEmpty()) return null;
-        var map = new HashMap<Task, Float>();
-        var total = 0f;
-        for (var task : Task.values()) {
+        Map<Task, Float> map = new HashMap<>();
+        float total = 0f;
+        for (Task task : Task.values()) {
             if (this.tasks.containsKey(task)) continue;
-            var weight = 1f / this.timesGotten.getOrDefault(task, 1);
+            float weight = 1f / this.timesGotten.getOrDefault(task, 1);
             map.put(task, weight);
             total += weight;
         }
-        var random = this.player.getRandom().nextFloat() * total;
-        for (var entry : map.entrySet()) {
+        float random = this.player.getRandom().nextFloat() * total;
+        for (Map.Entry<Task, Float> entry : map.entrySet()) {
             random -= entry.getValue();
             if (random <= 0) {
                 return switch (entry.getKey()) {
@@ -146,15 +164,19 @@ public class PlayerMoodComponent implements AutoSyncedComponent, ServerTickingCo
     public void setMood(float mood) {
         GameWorldComponent gameWorldComponent = GameWorldComponent.KEY.get(this.player.getWorld());
         this.mood = gameWorldComponent.isRole(this.player, TMMRoles.KILLER) || gameWorldComponent.getGameMode() != GameWorldComponent.GameMode.MURDER ? 1 : Math.clamp(mood, 0, 1);
-        this.sync();
+        this.markDirty();
     }
 
     public void eatFood() {
-        if (this.tasks.get(Task.EAT) instanceof EatTask eatTask) eatTask.fulfilled = true;
+        if (this.tasks.get(Task.EAT) instanceof EatTask eatTask) {
+            eatTask.fulfilled = true;
+        }
     }
 
     public void drinkCocktail() {
-        if (this.tasks.get(Task.DRINK) instanceof DrinkTask drinkTask) drinkTask.fulfilled = true;
+        if (this.tasks.get(Task.DRINK) instanceof DrinkTask drinkTask) {
+            drinkTask.fulfilled = true;
+        }
     }
 
     public boolean isLowerThanMid() {
@@ -172,8 +194,10 @@ public class PlayerMoodComponent implements AutoSyncedComponent, ServerTickingCo
     @Override
     public void writeToNbt(@NotNull NbtCompound tag, RegistryWrapper.WrapperLookup registryLookup) {
         tag.putFloat("mood", this.mood);
-        var tasks = new NbtList();
-        for (var task : this.tasks.values()) tasks.add(task.toNbt());
+        NbtList tasks = new NbtList();
+        for (TrainTask task : this.tasks.values()) {
+            tasks.add(task.toNbt());
+        }
         tag.put("tasks", tasks);
     }
 
@@ -182,11 +206,13 @@ public class PlayerMoodComponent implements AutoSyncedComponent, ServerTickingCo
         this.mood = tag.contains("mood", NbtElement.FLOAT_TYPE) ? tag.getFloat("mood") : 1f;
         this.tasks.clear();
         if (tag.contains("tasks", NbtElement.LIST_TYPE)) {
-            for (var element : tag.getList("tasks", NbtElement.COMPOUND_TYPE)) {
+            for (NbtElement element : tag.getList("tasks", NbtElement.COMPOUND_TYPE)) {
                 if (element instanceof NbtCompound compound && compound.contains("type")) {
-                    var type = compound.getInt("type");
-                    if (type < 0 || type >= Task.values().length) continue;
-                    var typeEnum = Task.values()[type];
+                    int type = compound.getInt("type");
+                    if (type < 0 || type >= Task.values().length) {
+                        continue;
+                    }
+                    Task typeEnum = Task.values()[type];
                     this.tasks.put(typeEnum, typeEnum.setFunction.apply(compound));
                 }
             }
@@ -235,7 +261,7 @@ public class PlayerMoodComponent implements AutoSyncedComponent, ServerTickingCo
 
         @Override
         public NbtCompound toNbt() {
-            var nbt = new NbtCompound();
+            NbtCompound nbt = new NbtCompound();
             nbt.putInt("type", Task.SLEEP.ordinal());
             nbt.putInt("timer", this.timer);
             return nbt;
@@ -271,7 +297,7 @@ public class PlayerMoodComponent implements AutoSyncedComponent, ServerTickingCo
 
         @Override
         public NbtCompound toNbt() {
-            var nbt = new NbtCompound();
+            NbtCompound nbt = new NbtCompound();
             nbt.putInt("type", Task.OUTSIDE.ordinal());
             nbt.putInt("timer", this.timer);
             return nbt;
@@ -298,7 +324,7 @@ public class PlayerMoodComponent implements AutoSyncedComponent, ServerTickingCo
 
         @Override
         public NbtCompound toNbt() {
-            var nbt = new NbtCompound();
+            NbtCompound nbt = new NbtCompound();
             nbt.putInt("type", Task.EAT.ordinal());
             return nbt;
         }
@@ -324,7 +350,7 @@ public class PlayerMoodComponent implements AutoSyncedComponent, ServerTickingCo
 
         @Override
         public NbtCompound toNbt() {
-            var nbt = new NbtCompound();
+            NbtCompound nbt = new NbtCompound();
             nbt.putInt("type", Task.DRINK.ordinal());
             return nbt;
         }

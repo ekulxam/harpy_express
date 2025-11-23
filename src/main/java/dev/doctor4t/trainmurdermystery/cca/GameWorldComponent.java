@@ -316,7 +316,7 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
             }
 
             if (this.isRunning()) {
-                var civilianAlive = false;
+                boolean civilianAlive = false;
                 for (ServerPlayerEntity player : serverWorld.getPlayers()) {
                     // kill players who fell off the train
                     if (GameFunctions.isPlayerAliveAndSurvival(player) && player.getY() < GameConstants.PLAY_AREA.minY) {

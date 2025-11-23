@@ -47,37 +47,40 @@ public class PlayerPoisonComponent implements AutoSyncedComponent, ServerTicking
 
     @Override
     public void clientTick() {
-        if (this.poisonTicks > -1) this.poisonTicks--;
-        if (this.poisonTicks > 0) {
-            var ticksSinceStart = this.initialPoisonTicks - this.poisonTicks;
-
-            if (ticksSinceStart < 200) return;
-
-            var minCooldown = 10;
-            var maxCooldown = 60;
-            var dynamicCooldown = minCooldown + (int) ((maxCooldown - minCooldown) * ((float) this.poisonTicks / clampTime.getRight()));
-
-            if (this.poisonPulseCooldown <= 0) {
-                this.poisonPulseCooldown = dynamicCooldown;
-
-                this.pulsing = true;
-
-                var minVolume = 0.5f;
-                var maxVolume = 1f;
-                var volume = minVolume + (maxVolume - minVolume) * (1f - ((float) this.poisonTicks / clampTime.getRight()));
-
-                this.player.playSoundToPlayer(
-                        SoundEvents.ENTITY_WARDEN_HEARTBEAT,
-                        SoundCategory.PLAYERS,
-                        volume,
-                        1f
-                );
-            } else {
-                this.poisonPulseCooldown--;
-            }
-        } else {
-            this.poisonPulseCooldown = 0;
+        if (this.poisonTicks > -1) {
+            this.poisonTicks--;
         }
+        if (this.poisonTicks < 0) {
+            this.poisonTicks = 0;
+            return;
+        }
+
+        int ticksSinceStart = this.initialPoisonTicks - this.poisonTicks;
+
+        if (ticksSinceStart < 200) return;
+
+        if (this.poisonPulseCooldown > 0) {
+            this.poisonPulseCooldown--;
+            return;
+        }
+
+        int minCooldown = 10;
+        int maxCooldown = 60;
+
+        this.poisonPulseCooldown = minCooldown + (int) ((maxCooldown - minCooldown) * ((float) this.poisonTicks / clampTime.getRight()));
+
+        this.pulsing = true;
+
+        float minVolume = 0.5f;
+        float maxVolume = 1f;
+        float volume = minVolume + (maxVolume - minVolume) * (1f - ((float) this.poisonTicks / clampTime.getRight()));
+
+        this.player.playSoundToPlayer(
+                SoundEvents.ENTITY_WARDEN_HEARTBEAT,
+                SoundCategory.PLAYERS,
+                volume,
+                1f
+        );
     }
 
     @Override

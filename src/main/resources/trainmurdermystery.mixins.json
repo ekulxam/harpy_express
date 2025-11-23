@@ -2,7 +2,7 @@
   "required": true,
   "package": "dev.doctor4t.trainmurdermystery.mixin",
   "compatibilityLevel": "JAVA_17",
-  "plugin": "dev.doctor4t.trainmurdermystery.mixin.TmmMixinPlugin",
+  "plugin": "dev.doctor4t.trainmurdermystery.util.TMMMixinPlugin",
   "mixins": [
     "AbstractBlockSettingsMixin",
     "DedicatedPlayerManagerMixin",
@@ -14,8 +14,7 @@
     "PlayerEntityMixin",
     "PlayerInventoryMixin",
     "ServerPlayerEntityMixin",
-    "ServerPlayNetworkHandlerMixin",
-    "client.LivingEntityRendererMixin"
+    "ServerPlayNetworkHandlerMixin"
   ],
   "injectors": {
     "defaultRequire": 1
@@ -24,6 +23,7 @@
     "client.AbstractClientPlayerEntityMixin",
     "client.EntityRendererDispatchMixin",
     "client.GameRendererMixin",
+    "client.LivingEntityRendererMixin",
     "client.MinecraftClientMixin",
     "client.PlayerEntityRendererMixin",
     "client.ResourceTextureMixin",
@@ -52,12 +52,12 @@
     "client.self.BeveragePlateBlockEntityMixin",
     "client.ui.InGameHudMixin",
     "client.ui.TooltipBackgroundRendererMixin",
-    "compat.sodium.DefaultChunkRendererMixin",
-    "compat.sodium.DefaultShaderInterfaceMixin",
-    "compat.sodium.OcclusionCullerMixin",
-    "compat.sodium.RenderSectionManagerMixin",
-    "compat.sodium.ShaderLoaderMixin",
-    "compat.sodium.SodiumShaderMixin",
-    "compat.sodium.SodiumTransformerMixin"
+    "client.compat.sodium.DefaultChunkRendererMixin",
+    "client.compat.sodium.DefaultShaderInterfaceMixin",
+    "client.compat.sodium.OcclusionCullerMixin",
+    "client.compat.sodium.RenderSectionManagerMixin",
+    "client.compat.sodium.ShaderLoaderMixin",
+    "client.compat.sodium.SodiumShaderMixin",
+    "client.compat.sodium.SodiumTransformerMixin"
   ]
 }

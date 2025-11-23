@@ -1,30 +1,30 @@
-package dev.doctor4t.trainmurdermystery.mixin.compat.sodium;
+package dev.doctor4t.trainmurdermystery.mixin.client.compat.sodium;
 
+import dev.doctor4t.trainmurdermystery.compat.IrisHelper;
 import dev.doctor4t.trainmurdermystery.compat.SodiumShaderInterface;
 import net.caffeinemc.mods.sodium.client.gl.buffer.GlMutableBuffer;
 import net.caffeinemc.mods.sodium.client.gl.shader.uniform.GlUniformBlock;
+import net.caffeinemc.mods.sodium.client.render.chunk.shader.ChunkShaderOptions;
+import net.caffeinemc.mods.sodium.client.render.chunk.shader.DefaultShaderInterface;
 import net.caffeinemc.mods.sodium.client.render.chunk.shader.ShaderBindingContext;
-import net.irisshaders.iris.gl.blending.BlendModeOverride;
-import net.irisshaders.iris.pipeline.IrisRenderingPipeline;
-import net.irisshaders.iris.pipeline.programs.SodiumPrograms;
-import net.irisshaders.iris.pipeline.programs.SodiumShader;
-import net.irisshaders.iris.uniforms.custom.CustomUniforms;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import java.util.List;
-import java.util.function.Supplier;
-
-@Mixin(SodiumShader.class)
-public class SodiumShaderMixin implements SodiumShaderInterface {
+@Mixin(DefaultShaderInterface.class)
+public class DefaultShaderInterfaceMixin implements SodiumShaderInterface {
     @Unique
     private GlUniformBlock trainmurdermystery$uniformOffsets;
 
     @Inject(method = "<init>", at = @At("RETURN"))
-    private void addUniform(IrisRenderingPipeline pipeline, SodiumPrograms.Pass pass, ShaderBindingContext context, int handle, BlendModeOverride blendModeOverride, List bufferBlendOverrides, CustomUniforms customUniforms, Supplier flipState, float alphaTest, boolean containsTessellation, CallbackInfo ci) {
+    private void addUniform(ShaderBindingContext context, ChunkShaderOptions options,
+                                CallbackInfo ci) {
+        if (IrisHelper.isIrisShaderPackInUse()) {
+            return;
+        }
+
         trainmurdermystery$uniformOffsets = context.bindUniformBlock("ubo_SectionOffsets", 1);
     }
 

@@ -1,4 +1,4 @@
-package dev.doctor4t.trainmurdermystery.mixin.compat.sodium;
+package dev.doctor4t.trainmurdermystery.mixin.client.compat.sodium;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.sugar.Local;

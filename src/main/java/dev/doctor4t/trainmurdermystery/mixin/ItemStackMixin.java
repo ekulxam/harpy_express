@@ -17,7 +17,9 @@ public abstract class ItemStackMixin {
 
     @WrapOperation(method = "useOnBlock", at = @At(value = "FIELD", target = "Lnet/minecraft/entity/player/PlayerAbilities;allowModifyWorld:Z"))
     public boolean useOnBlock(PlayerAbilities instance, Operation<Boolean> original) {
-        if (this.getItem() instanceof AdventureUsable) return true;
+        if (this.getItem() instanceof AdventureUsable) {
+            return true;
+        }
         return original.call(instance);
     }
 }

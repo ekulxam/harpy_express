@@ -21,15 +21,25 @@ public abstract class ItemEntityMixin {
     public abstract @Nullable Entity getOwner();
 
     @Shadow
-    private @Nullable UUID throwerUuid;
-
-    @Shadow
     public abstract ItemStack getStack();
 
     @WrapMethod(method = "onPlayerCollision")
     public void preventGunPickup(PlayerEntity player, Operation<Void> original) {
-        if (player.isCreative() || !this.getStack().isIn(TMMItemTags.GUNS) || (!GameWorldComponent.KEY.get(player.getWorld()).isRole(player, TMMRoles.KILLER) && !player.equals(this.getOwner()) && !player.getInventory().contains(itemStack -> itemStack.isIn(TMMItemTags.GUNS)))) {
+        if (player.isCreative() || !this.getStack().isIn(TMMItemTags.GUNS)) {
             original.call(player);
+            return;
         }
+
+        if (GameWorldComponent.KEY.get(player.getWorld()).isRole(player, TMMRoles.KILLER)) {
+            return;
+        }
+        if (player.equals(this.getOwner())) {
+            return;
+        }
+        if (player.getInventory().contains(itemStack -> itemStack.isIn(TMMItemTags.GUNS))) {
+            return;
+        }
+
+        original.call(player);
     }
 }

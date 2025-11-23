@@ -17,7 +17,9 @@ public class EntityMixin {
     @WrapMethod(method = "collidesWith")
     protected boolean solid(Entity other, Operation<Boolean> original) {
         if (GameWorldComponent.KEY.get(this.world).isRunning()) {
-            if ((Entity) (Object) this instanceof PlayerEntity && other instanceof PlayerEntity) return true;
+            if ((Entity) (Object) this instanceof PlayerEntity && other instanceof PlayerEntity) {
+                return true;
+            }
         }
         return original.call(other);
     }

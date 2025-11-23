@@ -4,7 +4,6 @@ import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.mojang.datafixers.util.Either;
-import dev.doctor4t.trainmurdermystery.TMM;
 import dev.doctor4t.trainmurdermystery.api.TMMRoles;
 import dev.doctor4t.trainmurdermystery.cca.GameWorldComponent;
 import dev.doctor4t.trainmurdermystery.cca.PlayerMoodComponent;
@@ -16,6 +15,7 @@ import dev.doctor4t.trainmurdermystery.game.GameFunctions;
 import dev.doctor4t.trainmurdermystery.index.TMMDataComponentTypes;
 import dev.doctor4t.trainmurdermystery.index.TMMItems;
 import dev.doctor4t.trainmurdermystery.index.TMMSounds;
+import dev.doctor4t.trainmurdermystery.item.BatItem;
 import dev.doctor4t.trainmurdermystery.item.CocktailItem;
 import dev.doctor4t.trainmurdermystery.util.PoisonUtils;
 import dev.doctor4t.trainmurdermystery.util.Scheduler;
@@ -29,7 +29,6 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.util.Unit;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
@@ -57,7 +56,6 @@ public abstract class PlayerEntityMixin extends LivingEntity {
         super(entityType, world);
     }
 
-
     @ModifyReturnValue(method = "getMovementSpeed", at = @At("RETURN"))
     public float overrideMovementSpeed(float original) {
         if (GameFunctions.isPlayerAliveAndSurvival((PlayerEntity) (Object) this)) {
@@ -70,16 +68,18 @@ public abstract class PlayerEntityMixin extends LivingEntity {
     @Inject(method = "tickMovement", at = @At("HEAD"))
     public void limitSprint(CallbackInfo ci) {
         GameWorldComponent gameComponent = GameWorldComponent.KEY.get(this.getWorld());
-        if (GameFunctions.isPlayerAliveAndSurvival((PlayerEntity) (Object) this) && !(gameComponent != null && (gameComponent.isRole(this.getUuid(), TMMRoles.KILLER) || !gameComponent.isRunning() || gameComponent.getGameMode() == GameWorldComponent.GameMode.LOOSE_ENDS))) {
-            if (this.isSprinting()) {
-                trainmurdermystery$sprintingTicks = Math.max(trainmurdermystery$sprintingTicks - 1, 0);
-            } else {
-                trainmurdermystery$sprintingTicks = Math.min(trainmurdermystery$sprintingTicks + 0.25f, GameConstants.MAX_SPRINTING_TICKS);
-            }
+        if (!(GameFunctions.isPlayerAliveAndSurvival((PlayerEntity) (Object) this) && !(gameComponent != null && (gameComponent.isRole(this.getUuid(), TMMRoles.KILLER) || !gameComponent.isRunning() || gameComponent.getGameMode() == GameWorldComponent.GameMode.LOOSE_ENDS)))) {
+            return;
+        }
 
-            if (trainmurdermystery$sprintingTicks <= 0) {
-                this.setSprinting(false);
-            }
+        if (this.isSprinting()) {
+            trainmurdermystery$sprintingTicks = Math.max(trainmurdermystery$sprintingTicks - 1, 0);
+        } else {
+            trainmurdermystery$sprintingTicks = Math.min(trainmurdermystery$sprintingTicks + 0.25f, GameConstants.MAX_SPRINTING_TICKS);
+        }
+
+        if (trainmurdermystery$sprintingTicks <= 0) {
+            this.setSprinting(false);
         }
     }
 
@@ -92,7 +92,7 @@ public abstract class PlayerEntityMixin extends LivingEntity {
         }
 
         if (GameFunctions.isPlayerAliveAndSurvival(self) && getMainHandStack().isOf(TMMItems.BAT) && target instanceof PlayerEntity playerTarget && this.getAttackCooldownProgress(0.5F) >= 1f) {
-            GameFunctions.killPlayer(playerTarget, true, self, TMM.id("bat_hit"));
+            GameFunctions.killPlayer(playerTarget, true, self, BatItem.BAT_DEATH_REASON);
             self.getEntityWorld().playSound(self,
                     playerTarget.getX(), playerTarget.getEyeY(), playerTarget.getZ(),
                     TMMSounds.ITEM_BAT_HIT, SoundCategory.PLAYERS,
@@ -102,37 +102,52 @@ public abstract class PlayerEntityMixin extends LivingEntity {
 
     @Inject(method = "eatFood", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/player/HungerManager;eat(Lnet/minecraft/component/type/FoodComponent;)V", shift = At.Shift.AFTER))
     private void poisonedFoodEffect(@NotNull World world, ItemStack stack, FoodComponent foodComponent, CallbackInfoReturnable<ItemStack> cir) {
-        if (world.isClient) return;
-        String poisoner = stack.getOrDefault(TMMDataComponentTypes.POISONER, null);
-        if (poisoner != null) {
-            int poisonTicks = PlayerPoisonComponent.KEY.get(this).poisonTicks;
-            if (poisonTicks == -1) {
-                PlayerPoisonComponent.KEY.get(this).setPoisonTicks(world.getRandom().nextBetween(PlayerPoisonComponent.clampTime.getLeft(), PlayerPoisonComponent.clampTime.getRight()), UUID.fromString(poisoner));
-            } else {
-                PlayerPoisonComponent.KEY.get(this).setPoisonTicks(MathHelper.clamp(poisonTicks - world.getRandom().nextBetween(100, 300), 0, PlayerPoisonComponent.clampTime.getRight()), UUID.fromString(poisoner));
-            }
+        if (world.isClient) {
+            return;
         }
+
+        String poisoner = stack.getOrDefault(TMMDataComponentTypes.POISONER, null);
+        if (poisoner == null) {
+            return;
+        }
+
+        int poisonTicks = PlayerPoisonComponent.KEY.get(this).poisonTicks;
+        int updated;
+
+        if (poisonTicks == -1) {
+            updated = world.getRandom().nextBetween(PlayerPoisonComponent.clampTime.getLeft(), PlayerPoisonComponent.clampTime.getRight());
+        } else {
+            updated = MathHelper.clamp(poisonTicks - world.getRandom().nextBetween(100, 300), 0, PlayerPoisonComponent.clampTime.getRight());
+        }
+
+        PlayerPoisonComponent.KEY.get(this).setPoisonTicks(updated, UUID.fromString(poisoner));
     }
 
     @Inject(method = "wakeUp(ZZ)V", at = @At("HEAD"))
     private void poisonSleep(boolean skipSleepTimer, boolean updateSleepingPlayers, CallbackInfo ci) {
-        if (this.trainmurdermystery$poisonSleepTask != null) {
-            this.trainmurdermystery$poisonSleepTask.cancel();
-            this.trainmurdermystery$poisonSleepTask = null;
+        if (this.trainmurdermystery$poisonSleepTask == null) {
+            return;
         }
+
+        this.trainmurdermystery$poisonSleepTask.cancel();
+        this.trainmurdermystery$poisonSleepTask = null;
     }
 
-    @Inject(method = "trySleep", at = @At("TAIL"))
-    private void poisonSleepMessage(BlockPos pos, CallbackInfoReturnable<Either<PlayerEntity.SleepFailureReason, Unit>> cir) {
+    @ModifyReturnValue(method = "trySleep", at = @At("TAIL"))
+    private Either<PlayerEntity.SleepFailureReason, Unit> poisonSleepMessage(Either<PlayerEntity.SleepFailureReason, Unit> original) {
         PlayerEntity self = (PlayerEntity) (Object) (this);
-        if (cir.getReturnValue().right().isPresent() && self instanceof ServerPlayerEntity serverPlayer) {
-            if (this.trainmurdermystery$poisonSleepTask != null) this.trainmurdermystery$poisonSleepTask.cancel();
-
-            this.trainmurdermystery$poisonSleepTask = Scheduler.schedule(
-                    () -> PoisonUtils.bedPoison(serverPlayer),
-                    40
-            );
+        if (!original.right().isPresent() || !(self instanceof ServerPlayerEntity serverPlayer)) {
+            return original;
         }
+        if (this.trainmurdermystery$poisonSleepTask != null) {
+            this.trainmurdermystery$poisonSleepTask.cancel();
+        }
+
+        this.trainmurdermystery$poisonSleepTask = Scheduler.schedule(
+                () -> PoisonUtils.bedPoison(serverPlayer),
+                40
+        );
+        return original;
     }
 
     @Inject(method = "canConsume(Z)Z", at = @At("HEAD"), cancellable = true)
@@ -142,13 +157,15 @@ public abstract class PlayerEntityMixin extends LivingEntity {
 
     @Inject(method = "eatFood", at = @At("HEAD"))
     private void eat(World world, ItemStack stack, FoodComponent foodComponent, @NotNull CallbackInfoReturnable<ItemStack> cir) {
-        if (!(stack.getItem() instanceof CocktailItem)) {
-            PlayerMoodComponent.KEY.get(this).eatFood();
+        if (stack.getItem() instanceof CocktailItem) {
+            return;
         }
+        PlayerMoodComponent.KEY.get(this).eatFood();
     }
 
     @Inject(method = "writeCustomDataToNbt", at = @At("TAIL"))
     private void saveData(NbtCompound nbt, CallbackInfo ci) {
+        // I would change the key to something more specific so other mods/datapacks don't interfere with it
         nbt.putFloat("sprintingTicks", this.trainmurdermystery$sprintingTicks);
     }
 

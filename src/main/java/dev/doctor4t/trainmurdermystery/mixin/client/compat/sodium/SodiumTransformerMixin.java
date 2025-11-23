@@ -1,4 +1,4 @@
-package dev.doctor4t.trainmurdermystery.mixin.compat.sodium;
+package dev.doctor4t.trainmurdermystery.mixin.client.compat.sodium;
 
 import io.github.douira.glsl_transformer.ast.node.TranslationUnit;
 import io.github.douira.glsl_transformer.ast.node.statement.CompoundStatement;

@@ -28,20 +28,20 @@ public abstract class LivingEntityMixin extends EntityMixin {
         if (!((Object) this instanceof PlayerEntity player)) {
             return;
         }
-        EntityAttributeModifier v = new EntityAttributeModifier(KnifeItem.KNOCKBACK_MODIFIER_ID, .5f, EntityAttributeModifier.Operation.ADD_VALUE);
-        trainmurdermystery$updateAttribute(player.getAttributeInstance(EntityAttributes.GENERIC_ATTACK_KNOCKBACK), v, player.getMainHandStack().isOf(TMMItems.KNIFE));
+        EntityAttributeModifier modifier = new EntityAttributeModifier(KnifeItem.KNOCKBACK_MODIFIER_ID, .5f, EntityAttributeModifier.Operation.ADD_VALUE);
+        trainmurdermystery$updateAttribute(player.getAttributeInstance(EntityAttributes.GENERIC_ATTACK_KNOCKBACK), modifier, player.getMainHandStack().isOf(TMMItems.KNIFE));
     }
 
     @Unique
-    private static void trainmurdermystery$updateAttribute(EntityAttributeInstance attribute, EntityAttributeModifier modifier, boolean addOrKeep) {
-        if (attribute == null) {
+    private static void trainmurdermystery$updateAttribute(EntityAttributeInstance attributeInstance, EntityAttributeModifier modifier, boolean addOrKeep) {
+        if (attributeInstance == null) {
             return;
         }
-        boolean alreadyHasModifier = attribute.hasModifier(modifier.id());
+        boolean alreadyHasModifier = attributeInstance.hasModifier(modifier.id());
         if (addOrKeep && !alreadyHasModifier) {
-            attribute.addPersistentModifier(modifier);
+            attributeInstance.addPersistentModifier(modifier);
         } else if (!addOrKeep && alreadyHasModifier) {
-            attribute.removeModifier(modifier);
+            attributeInstance.removeModifier(modifier);
         }
     }
 }

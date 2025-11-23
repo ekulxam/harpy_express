@@ -24,6 +24,8 @@ import dev.doctor4t.trainmurdermystery.client.render.block_entity.WheelBlockEnti
 import dev.doctor4t.trainmurdermystery.client.render.entity.FirecrackerEntityRenderer;
 import dev.doctor4t.trainmurdermystery.client.render.entity.HornBlockEntityRenderer;
 import dev.doctor4t.trainmurdermystery.client.render.entity.NoteEntityRenderer;
+import dev.doctor4t.trainmurdermystery.client.util.HandParticleManager;
+import dev.doctor4t.trainmurdermystery.client.util.MatrixParticleManager;
 import dev.doctor4t.trainmurdermystery.client.util.TMMItemTooltips;
 import dev.doctor4t.trainmurdermystery.entity.FirecrackerEntity;
 import dev.doctor4t.trainmurdermystery.entity.NoteEntity;
@@ -37,7 +39,6 @@ import dev.doctor4t.trainmurdermystery.networking.GunDropS2CPayload;
 import dev.doctor4t.trainmurdermystery.networking.PoisonOverlayS2CPayload;
 import dev.doctor4t.trainmurdermystery.networking.ShootMuzzleS2CPayload;
 import dev.doctor4t.trainmurdermystery.networking.TaskCompleteS2CPayload;
-import dev.doctor4t.trainmurdermystery.util.*;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;

@@ -22,7 +22,6 @@ public class HandParticle {
     public float[] bColors = {1f};
     public float[] aColors = {1f};
 
-
     public Function<Identifier, RenderLayer> renderLayerFactory;
 
     public HandParticle() {

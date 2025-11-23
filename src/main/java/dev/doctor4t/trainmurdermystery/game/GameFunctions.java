@@ -144,7 +144,7 @@ public class GameFunctions {
             int killerCount = assignRolesAndGetKillerCount(world, players, gameComponent);
 
             for (ServerPlayerEntity player : players) {
-                ServerPlayNetworking.send(player, new AnnounceWelcomeS2CPayload(RoleAnnouncementTexts.ROLE_ANNOUNCEMENT_TEXTS.indexOf(gameComponent.isRole(player, TMMRoles.KILLER) ? RoleAnnouncementTexts.KILLER : gameComponent.isRole(player, TMMRoles.VIGILANTE) ? RoleAnnouncementTexts.VIGILANTE : RoleAnnouncementTexts.CIVILIAN), killerCount, players.size() - killerCount));
+                ServerPlayNetworking.send(player, new AnnounceWelcomeS2CPayload(RoleAnnouncementTexts.ROLE_ANNOUNCEMENT_TEXTS.indexOf(gameComponent.getRole(player).getAnnouncementText()), killerCount, players.size() - killerCount));
             }
         }
 

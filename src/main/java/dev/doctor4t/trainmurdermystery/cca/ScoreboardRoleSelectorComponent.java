@@ -180,10 +180,12 @@ public class ScoreboardRoleSelectorComponent implements AutoSyncedComponent {
             if (gameComponent.isRole(player, TMMRoles.KILLER)) {
                 continue;
             }
+
             float weight = (float) Math.exp(-this.vigilanteRounds.getOrDefault(player.getUuid(), 0) * 4);
             if (!GameWorldComponent.KEY.get(world).areWeightsEnabled()) {
                 weight = 1;
             }
+
             map.put(player, weight);
             total += weight;
         }

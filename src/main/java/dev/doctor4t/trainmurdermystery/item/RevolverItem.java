@@ -26,18 +26,21 @@ public class RevolverItem extends Item {
 
     @Override
     public TypedActionResult<ItemStack> use(@NotNull World world, @NotNull PlayerEntity user, Hand hand) {
-        if (world.isClient) {
-            HitResult collision = getGunTarget(user);
-            if (collision instanceof EntityHitResult entityHitResult) {
-                Entity target = entityHitResult.getEntity();
-                ClientPlayNetworking.send(new GunShootC2SPayload(target.getId()));
-            } else {
-                ClientPlayNetworking.send(new GunShootC2SPayload(-1));
-            }
-            user.setPitch(user.getPitch() - 4);
-            spawnHandParticle();
+        ItemStack stack = user.getStackInHand(hand);
+        if (!world.isClient) {
+            return TypedActionResult.consume(stack);
         }
-        return TypedActionResult.consume(user.getStackInHand(hand));
+
+        int targetId = -1;
+        HitResult collision = getGunTarget(user);
+        if (collision instanceof EntityHitResult entityHitResult) {
+            targetId = entityHitResult.getEntity().getId();
+        }
+
+        ClientPlayNetworking.send(new GunShootC2SPayload(targetId));
+        user.setPitch(user.getPitch() - 4);
+        spawnHandParticle();
+        return TypedActionResult.consume(stack);
     }
 
     public static void spawnHandParticle() {

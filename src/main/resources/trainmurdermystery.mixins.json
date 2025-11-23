@@ -29,6 +29,13 @@
     "client.ResourceTextureMixin",
     "client.ResourceTextureMixin$TextureDataMixin",
     "client.TrueDarknessLightmapTextureManagerMixin",
+    "client.compat.sodium.DefaultChunkRendererMixin",
+    "client.compat.sodium.DefaultShaderInterfaceMixin",
+    "client.compat.sodium.OcclusionCullerMixin",
+    "client.compat.sodium.RenderSectionManagerMixin",
+    "client.compat.sodium.ShaderLoaderMixin",
+    "client.compat.sodium.SodiumShaderMixin",
+    "client.compat.sodium.SodiumTransformerMixin",
     "client.items.BipedEntityModelMixin",
     "client.items.ClientPlayerEntityMixin",
     "client.items.HeldItemFeatureRendererMixin",
@@ -50,14 +57,8 @@
     "client.scenery.SceneryWorldRendererMixin",
     "client.scenery.WorldRendererMixin",
     "client.self.BeveragePlateBlockEntityMixin",
+    "client.self.NoteItemMixin",
     "client.ui.InGameHudMixin",
-    "client.ui.TooltipBackgroundRendererMixin",
-    "client.compat.sodium.DefaultChunkRendererMixin",
-    "client.compat.sodium.DefaultShaderInterfaceMixin",
-    "client.compat.sodium.OcclusionCullerMixin",
-    "client.compat.sodium.RenderSectionManagerMixin",
-    "client.compat.sodium.ShaderLoaderMixin",
-    "client.compat.sodium.SodiumShaderMixin",
-    "client.compat.sodium.SodiumTransformerMixin"
+    "client.ui.TooltipBackgroundRendererMixin"
   ]
 }

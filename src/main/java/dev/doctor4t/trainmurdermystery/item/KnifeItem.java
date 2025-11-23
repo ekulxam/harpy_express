@@ -48,10 +48,12 @@ public class KnifeItem extends Item {
         if (remainingUseTicks >= this.getMaxUseTime(stack, user) - 10) {
             return;
         }
+
         HitResult collision = getKnifeTarget(attacker);
         if (!(collision instanceof EntityHitResult entityHitResult)) {
             return;
         }
+
         Entity target = entityHitResult.getEntity();
         ClientPlayNetworking.send(new KnifeStabC2SPayload(target.getId()));
     }

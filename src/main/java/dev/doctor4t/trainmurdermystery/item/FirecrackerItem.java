@@ -19,21 +19,35 @@ public class FirecrackerItem extends Item implements AdventureUsable {
 
     @Override
     public ActionResult useOnBlock(@NotNull ItemUsageContext context) {
-        if (context.getSide().equals(Direction.UP)) {
-            PlayerEntity player = context.getPlayer();
-            World world = player.getWorld();
-            if (!world.isClient) {
-                FirecrackerEntity firecracker = TMMEntities.FIRECRACKER.create(world);
-                Vec3d spawnPos = context.getHitPos();
+        if (!context.getSide().equals(Direction.UP)) {
+            return ActionResult.PASS;
+        }
 
-                firecracker.setPosition(spawnPos.getX(), spawnPos.getY(), spawnPos.getZ());
-                firecracker.setYaw(player.getHeadYaw());
-                world.spawnEntity(firecracker);
-                if (!player.isCreative()) player.getStackInHand(context.getHand()).decrement(1);
-            }
+        PlayerEntity player = context.getPlayer();
+        if (player == null) {
+            return ActionResult.PASS;
+        }
+
+        World world = player.getWorld();
+        if (world.isClient) {
             return ActionResult.SUCCESS;
         }
 
-        return ActionResult.PASS;
+        FirecrackerEntity firecracker = TMMEntities.FIRECRACKER.create(world);
+        if (firecracker == null) {
+            return ActionResult.SUCCESS;
+        }
+
+        Vec3d spawnPos = context.getHitPos();
+
+        firecracker.setPosition(spawnPos.getX(), spawnPos.getY(), spawnPos.getZ());
+        firecracker.setYaw(player.getHeadYaw());
+        world.spawnEntity(firecracker);
+
+        if (!player.isCreative()) {
+            player.getStackInHand(context.getHand()).decrement(1);
+        }
+
+        return ActionResult.SUCCESS;
     }
 }

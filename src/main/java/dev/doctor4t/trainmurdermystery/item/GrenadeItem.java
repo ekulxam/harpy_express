@@ -22,6 +22,7 @@ public class GrenadeItem extends Item {
     public TypedActionResult<ItemStack> use(@NotNull World world, @NotNull PlayerEntity user, Hand hand) {
         ItemStack itemStack = user.getStackInHand(hand);
         world.playSound(null, user.getX(), user.getY(), user.getZ(), TMMSounds.ITEM_GRENADE_THROW, SoundCategory.NEUTRAL, 0.5F, 1F + (world.random.nextFloat() - .5f) / 10f);
+
         if (!world.isClient) {
             GrenadeEntity grenade = new GrenadeEntity(TMMEntities.GRENADE, world);
             grenade.setOwner(user);

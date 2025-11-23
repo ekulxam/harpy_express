@@ -22,19 +22,34 @@ public class CrowbarItem extends Item implements AdventureUsable {
     public ActionResult useOnBlock(ItemUsageContext context) {
         World world = context.getWorld();
         BlockEntity entity = world.getBlockEntity(context.getBlockPos());
-        if (!(entity instanceof DoorBlockEntity)) entity = world.getBlockEntity(context.getBlockPos().down());
-        PlayerEntity player = context.getPlayer();
-        if (entity instanceof DoorBlockEntity door && !door.isBlasted() && player != null) {
-            if (!player.isCreative()) player.getItemCooldownManager().set(this, 6000);
-            world.playSound(null, context.getBlockPos(), TMMSounds.ITEM_CROWBAR_PRY, SoundCategory.BLOCKS, 2.5f, 1f);
-            player.swingHand(Hand.MAIN_HAND, true);
-
-            if (!player.isCreative()) {
-                player.getItemCooldownManager().set(this, GameConstants.ITEM_COOLDOWNS.get(this));
-            }
-
-            door.blast();
+        if (!(entity instanceof DoorBlockEntity)) {
+            entity = world.getBlockEntity(context.getBlockPos().down());
         }
-        return super.useOnBlock(context);
+
+        PlayerEntity player = context.getPlayer();
+        if (player == null) {
+            return super.useOnBlock(context);
+        }
+        if (!(entity instanceof DoorBlockEntity door)) {
+            return super.useOnBlock(context);
+        }
+        if (door.isBlasted()) {
+            return super.useOnBlock(context);
+        }
+
+        if (!player.isCreative()) {
+            player.getItemCooldownManager().set(this, 6000);
+        }
+
+        world.playSound(null, context.getBlockPos(), TMMSounds.ITEM_CROWBAR_PRY, SoundCategory.BLOCKS, 2.5f, 1f);
+        player.swingHand(Hand.MAIN_HAND, true);
+
+        if (!player.isCreative()) {
+            player.getItemCooldownManager().set(this, GameConstants.ITEM_COOLDOWNS.get(this));
+        }
+
+        door.blast();
+
+        return ActionResult.SUCCESS;
     }
 }

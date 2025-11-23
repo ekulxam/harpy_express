@@ -32,21 +32,25 @@ public class DerringerItem extends RevolverItem {
     @Override
     public TypedActionResult<ItemStack> use(@NotNull World world, @NotNull PlayerEntity user, Hand hand) {
         ItemStack stack = user.getStackInHand(hand);
+        if (!world.isClient) {
+            return TypedActionResult.consume(stack);
+        }
+
         boolean used = stack.getOrDefault(TMMDataComponentTypes.USED, false);
 
-        if (world.isClient) {
-            HitResult collision = getGunTarget(user);
-            if (collision instanceof EntityHitResult entityHitResult) {
-                Entity target = entityHitResult.getEntity();
-                ClientPlayNetworking.send(new GunShootC2SPayload(target.getId()));
-            } else {
-                ClientPlayNetworking.send(new GunShootC2SPayload(-1));
-            }
-            if (!used) {
-                user.setPitch(user.getPitch() - 4);
-                spawnHandParticle();
-            }
+        int targetId = -1;
+        HitResult collision = getGunTarget(user);
+        if (collision instanceof EntityHitResult entityHitResult) {
+            targetId = entityHitResult.getEntity().getId();
         }
+
+        ClientPlayNetworking.send(new GunShootC2SPayload(targetId));
+
+        if (!used) {
+            user.setPitch(user.getPitch() - 4);
+            spawnHandParticle();
+        }
+
         return TypedActionResult.consume(stack);
     }
 

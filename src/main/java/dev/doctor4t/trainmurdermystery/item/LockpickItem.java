@@ -23,30 +23,37 @@ public class LockpickItem extends Item implements AdventureUsable {
     @Override
     public ActionResult useOnBlock(ItemUsageContext context) {
         PlayerEntity player = context.getPlayer();
+        if (player == null) {
+            return super.useOnBlock(context);
+        }
+
         World world = context.getWorld();
         BlockPos pos = context.getBlockPos();
         BlockState state = world.getBlockState(pos);
 
-        if (state.getBlock() instanceof SmallDoorBlock) {
-            BlockPos lowerPos = state.get(SmallDoorBlock.HALF) == DoubleBlockHalf.LOWER ? pos : pos.down();
-            if (world.getBlockEntity(lowerPos) instanceof SmallDoorBlockEntity entity) {
-                if (player.isSneaking()) {
-                    entity.jam();
+        if (!(state.getBlock() instanceof SmallDoorBlock)) {
+            return super.useOnBlock(context);
+        }
 
-                    if (!player.isCreative()) {
-                        player.getItemCooldownManager().set(this, GameConstants.ITEM_COOLDOWNS.get(this));
-                    }
-
-                    if (!world.isClient)
-                        world.playSound(null, lowerPos.getX() + .5f, lowerPos.getY() + 1, lowerPos.getZ() + .5f, TMMSounds.ITEM_LOCKPICK_DOOR, SoundCategory.BLOCKS, 1f, 1f);
-                    return ActionResult.SUCCESS;
-                }
-            }
-
+        BlockPos lowerPos = state.get(SmallDoorBlock.HALF) == DoubleBlockHalf.LOWER ? pos : pos.down();
+        if (!(world.getBlockEntity(lowerPos) instanceof SmallDoorBlockEntity entity)) {
             return ActionResult.PASS;
         }
 
-        return super.useOnBlock(context);
-    }
+        if (!player.isSneaking()) {
+            return ActionResult.PASS;
+        }
 
+        entity.jam();
+
+        if (!player.isCreative()) {
+            player.getItemCooldownManager().set(this, GameConstants.ITEM_COOLDOWNS.get(this));
+        }
+
+        if (!world.isClient) {
+            world.playSound(null, lowerPos.getX() + .5f, lowerPos.getY() + 1, lowerPos.getZ() + .5f, TMMSounds.ITEM_LOCKPICK_DOOR, SoundCategory.BLOCKS, 1f, 1f);
+        }
+
+        return ActionResult.SUCCESS;
+    }
 }

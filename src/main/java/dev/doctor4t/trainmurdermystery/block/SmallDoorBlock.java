@@ -4,7 +4,7 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import dev.doctor4t.trainmurdermystery.block_entity.DoorBlockEntity;
 import dev.doctor4t.trainmurdermystery.block_entity.SmallDoorBlockEntity;
-import dev.doctor4t.trainmurdermystery.event.AllowPlayerOpenLockedDoor;
+import dev.doctor4t.trainmurdermystery.api.event.AllowPlayerOpenLockedDoor;
 import dev.doctor4t.trainmurdermystery.index.TMMItems;
 import dev.doctor4t.trainmurdermystery.index.TMMSounds;
 import net.minecraft.block.Block;

@@ -20,7 +20,11 @@ import org.jetbrains.annotations.NotNull;
 import java.util.List;
 
 @Environment(EnvType.CLIENT)
-public class LobbyPlayersRenderer {
+public final class LobbyPlayersRenderer {
+
+    private LobbyPlayersRenderer() {
+    }
+
     public static void renderHud(TextRenderer renderer, @NotNull ClientPlayerEntity player, @NotNull DrawContext context) {
         GameWorldComponent game = GameWorldComponent.KEY.get(player.getWorld());
         if (game.isRunning()) {

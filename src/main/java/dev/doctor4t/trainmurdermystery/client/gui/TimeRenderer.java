@@ -5,16 +5,23 @@ import dev.doctor4t.trainmurdermystery.cca.GameTimeComponent;
 import dev.doctor4t.trainmurdermystery.cca.GameWorldComponent;
 import dev.doctor4t.trainmurdermystery.game.GameConstants;
 import dev.doctor4t.trainmurdermystery.game.GameFunctions;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Pair;
 import net.minecraft.util.math.MathHelper;
 import org.jetbrains.annotations.NotNull;
 
+@Environment(EnvType.CLIENT)
 public class TimeRenderer {
     public static TimeNumberRenderer view = new TimeNumberRenderer();
     public static float offsetDelta = 0f;
+
+    private TimeRenderer() {
+    }
 
     public static void renderHud(TextRenderer renderer, @NotNull ClientPlayerEntity player, @NotNull DrawContext context, float delta) {
         GameWorldComponent gameWorldComponent = GameWorldComponent.KEY.get(player.getWorld());
@@ -31,10 +38,11 @@ public class TimeRenderer {
             float green = offsetDelta < 0 ? 1f + offsetDelta : 1f;
             float blue = 1f - Math.abs(offsetDelta);
             int colour = MathHelper.packRgb(red, green, blue) | 0xFF000000;
-            context.getMatrices().push();
-            context.getMatrices().translate(context.getScaledWindowWidth() / 2f, 6, 0);
+            MatrixStack matrices = context.getMatrices();
+            matrices.push();
+            matrices.translate(context.getScaledWindowWidth() / 2f, 6, 0);
             view.render(renderer, context, 0, 0, colour, delta);
-            context.getMatrices().pop();
+            matrices.pop();
         }
     }
 
@@ -65,19 +73,20 @@ public class TimeRenderer {
         }
 
         public void render(TextRenderer renderer, @NotNull DrawContext context, int x, int y, int colour, float delta) {
-            context.getMatrices().push();
-            context.getMatrices().translate(x, y, 0);
-            context.getMatrices().translate(16, 0, 0);
+            MatrixStack matrices = context.getMatrices();
+            matrices.push();
+            matrices.translate(x, y, 0);
+            matrices.translate(16, 0, 0);
             this.seconds.getRight().render(renderer, context, colour, delta);
-            context.getMatrices().translate(-8, 0, 0);
+            matrices.translate(-8, 0, 0);
             this.seconds.getLeft().render(renderer, context, colour, delta);
-            context.getMatrices().translate(-8, 0, 0);
+            matrices.translate(-8, 0, 0);
             context.drawTextWithShadow(renderer, ":", 2, 0, colour);
-            context.getMatrices().translate(-8, 0, 0);
+            matrices.translate(-8, 0, 0);
             this.minutes.getRight().render(renderer, context, colour, delta);
-            context.getMatrices().translate(-8, 0, 0);
+            matrices.translate(-8, 0, 0);
             this.minutes.getLeft().render(renderer, context, colour, delta);
-            context.getMatrices().pop();
+            matrices.pop();
         }
 
         public float getTarget() {
@@ -109,8 +118,9 @@ public class TimeRenderer {
             int digitNext = MathHelper.floor(value + 1) % (this.cap6 ? 6 : 10);
             double offset = Math.pow(value % 1, this.power);
             colour &= 0xFFFFFF;
-            context.getMatrices().push();
-            context.getMatrices().translate(0, -offset * (renderer.fontHeight + 2), 0);
+            MatrixStack matrices = context.getMatrices();
+            matrices.push();
+            matrices.translate(0, -offset * (renderer.fontHeight + 2), 0);
             double alpha = (1.0f - Math.abs(offset)) * 255.0f;
             int baseColour = colour | (int) alpha << 24;
             int nextColour = colour | (int) (Math.abs(offset) * 255.0f) << 24;
@@ -120,7 +130,7 @@ public class TimeRenderer {
             if ((nextColour & -67108864) != 0) {
                 context.drawTextWithShadow(renderer, String.valueOf(digitNext), 0, renderer.fontHeight + 2, nextColour);
             }
-            context.getMatrices().pop();
+            matrices.pop();
         }
 
         public void setTarget(float target) {

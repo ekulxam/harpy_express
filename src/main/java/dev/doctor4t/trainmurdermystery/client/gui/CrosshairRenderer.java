@@ -7,6 +7,8 @@ import dev.doctor4t.trainmurdermystery.index.TMMItems;
 import dev.doctor4t.trainmurdermystery.item.DerringerItem;
 import dev.doctor4t.trainmurdermystery.item.KnifeItem;
 import dev.doctor4t.trainmurdermystery.item.RevolverItem;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.network.ClientPlayerEntity;
@@ -19,7 +21,8 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.hit.EntityHitResult;
 import org.jetbrains.annotations.NotNull;
 
-public class CrosshairRenderer {
+@Environment(EnvType.CLIENT)
+public final class CrosshairRenderer {
     private static final Identifier CROSSHAIR = TMM.id("hud/crosshair");
     private static final Identifier CROSSHAIR_TARGET = TMM.id("hud/crosshair_target");
     private static final Identifier KNIFE_ATTACK = TMM.id("hud/knife_attack");
@@ -29,41 +32,20 @@ public class CrosshairRenderer {
     private static final Identifier BAT_PROGRESS = TMM.id("hud/bat_progress");
     private static final Identifier BAT_BACKGROUND = TMM.id("hud/bat_background");
 
+    private CrosshairRenderer() {
+    }
+
 
     public static void renderCrosshair(@NotNull MinecraftClient client, @NotNull ClientPlayerEntity player, DrawContext context, RenderTickCounter tickCounter) {
         if (!client.options.getPerspective().isFirstPerson()) return;
-        boolean target = false;
         MatrixStack matrices = context.getMatrices();
 
         matrices.push();
         matrices.translate(context.getScaledWindowWidth() / 2f, context.getScaledWindowHeight() / 2f, 0);
         RenderSystem.defaultBlendFunc();
         RenderSystem.disableBlend();
-        ItemStack mainHandStack = player.getMainHandStack();
-        if (mainHandStack.isOf(TMMItems.REVOLVER) && !player.getItemCooldownManager().isCoolingDown(mainHandStack.getItem()) && RevolverItem.getGunTarget(player) instanceof EntityHitResult) {
-            target = true;
-        } else if (mainHandStack.isOf(TMMItems.DERRINGER) && !player.getItemCooldownManager().isCoolingDown(mainHandStack.getItem()) && DerringerItem.getGunTarget(player) instanceof EntityHitResult) {
-            target = true;
-        } else if (mainHandStack.isOf(TMMItems.KNIFE)) {
-            ItemCooldownManager manager = player.getItemCooldownManager();
-            if (!manager.isCoolingDown(TMMItems.KNIFE) && KnifeItem.getKnifeTarget(player) instanceof EntityHitResult) {
-                target = true;
-                context.drawGuiTexture(KNIFE_ATTACK, -5, 5, 10, 7);
-            } else {
-                float inverseCooldownProgress = 1 - manager.getCooldownProgress(TMMItems.KNIFE, tickCounter.getTickDelta(true));
-                context.drawGuiTexture(KNIFE_BACKGROUND, -5, 5, 10, 7);
-                context.drawGuiTexture(KNIFE_PROGRESS, 10, 7, 0, 0, -5, 5, (int) (inverseCooldownProgress * 10.0f), 7);
-            }
-        } else if (mainHandStack.isOf(TMMItems.BAT)) {
-            if (player.getAttackCooldownProgress(tickCounter.getTickDelta(true)) >= 1f && client.crosshairTarget instanceof EntityHitResult result && result.getEntity() instanceof PlayerEntity) {
-                target = true;
-                context.drawGuiTexture(BAT_ATTACK, -5, 5, 10, 7);
-            } else {
-                float cooldownProgress = player.getAttackCooldownProgress(tickCounter.getTickDelta(true));
-                context.drawGuiTexture(BAT_BACKGROUND, -5, 5, 10, 7);
-                context.drawGuiTexture(BAT_PROGRESS, 10, 7, 0, 0, -5, 5, (int) (cooldownProgress * 10.0f), 7);
-            }
-        }
+        boolean target = renderSpecialGUIForItems(client, player, context, tickCounter, player.getMainHandStack());
+
         matrices.push();
         matrices.translate(-1.5f, -1.5f, 0);
         RenderSystem.enableBlend();
@@ -74,8 +56,48 @@ public class CrosshairRenderer {
             context.drawGuiTexture(CROSSHAIR, 0, 0, 3, 3);
         }
         matrices.pop();
+
         matrices.pop();
         RenderSystem.defaultBlendFunc();
         RenderSystem.disableBlend();
+    }
+
+    /**
+     * Renders cooldown progress and other GUI objects for certain held items
+     * @param client the client
+     * @param player the client's player
+     * @param context the DrawContext, for drawing cooldowns
+     * @param tickCounter allows for obtaining tickProgress
+     * @param mainHandStack the ItemStack in the main hand
+     * @return whether a target was found
+     */
+    private static boolean renderSpecialGUIForItems(MinecraftClient client, ClientPlayerEntity player, DrawContext context, RenderTickCounter tickCounter, ItemStack mainHandStack) {
+        if (mainHandStack.isOf(TMMItems.REVOLVER) && !player.getItemCooldownManager().isCoolingDown(mainHandStack.getItem()) && RevolverItem.getGunTarget(player) instanceof EntityHitResult) {
+            return true;
+        }
+        if (mainHandStack.isOf(TMMItems.DERRINGER) && !player.getItemCooldownManager().isCoolingDown(mainHandStack.getItem()) && DerringerItem.getGunTarget(player) instanceof EntityHitResult) {
+            return true;
+        }
+        if (mainHandStack.isOf(TMMItems.KNIFE)) {
+            ItemCooldownManager manager = player.getItemCooldownManager();
+            if (!manager.isCoolingDown(TMMItems.KNIFE) && KnifeItem.getKnifeTarget(player) instanceof EntityHitResult) {
+                context.drawGuiTexture(KNIFE_ATTACK, -5, 5, 10, 7);
+                return true;
+            }
+            float inverseCooldownProgress = 1 - manager.getCooldownProgress(TMMItems.KNIFE, tickCounter.getTickDelta(true));
+            context.drawGuiTexture(KNIFE_BACKGROUND, -5, 5, 10, 7);
+            context.drawGuiTexture(KNIFE_PROGRESS, 10, 7, 0, 0, -5, 5, (int) (inverseCooldownProgress * 10.0f), 7);
+            return false;
+        }
+        if (mainHandStack.isOf(TMMItems.BAT)) {
+            if (player.getAttackCooldownProgress(tickCounter.getTickDelta(true)) >= 1f && client.crosshairTarget instanceof EntityHitResult result && result.getEntity() instanceof PlayerEntity) {
+                context.drawGuiTexture(BAT_ATTACK, -5, 5, 10, 7);
+                return true;
+            }
+            float cooldownProgress = player.getAttackCooldownProgress(tickCounter.getTickDelta(true));
+            context.drawGuiTexture(BAT_BACKGROUND, -5, 5, 10, 7);
+            context.drawGuiTexture(BAT_PROGRESS, 10, 7, 0, 0, -5, 5, (int) (cooldownProgress * 10.0f), 7);
+        }
+        return false;
     }
 }

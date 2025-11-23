@@ -9,6 +9,7 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.ingame.ScreenHandlerProvider;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.texture.Sprite;
+import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.screen.ScreenHandler;
@@ -82,8 +83,9 @@ public abstract class LimitedHandledScreen<T extends ScreenHandler> extends Scre
         int j = this.y - getYOffset();
         super.render(context, mouseX, mouseY, delta);
         RenderSystem.disableDepthTest();
-        context.getMatrices().push();
-        context.getMatrices().translate((float) i, (float) j, 0.0F);
+        MatrixStack matrices = context.getMatrices();
+        matrices.push();
+        matrices.translate((float) i, (float) j, 0.0F);
         this.focusedSlot = null;
 
         for (int k = 0; k < this.handler.slots.size(); k++) {
@@ -134,7 +136,7 @@ public abstract class LimitedHandledScreen<T extends ScreenHandler> extends Scre
             this.drawItem(context, this.touchDropReturningStack, o, p, null);
         }
 
-        context.getMatrices().pop();
+        matrices.pop();
         RenderSystem.enableDepthTest();
     }
 
@@ -184,11 +186,12 @@ public abstract class LimitedHandledScreen<T extends ScreenHandler> extends Scre
     }
 
     private void drawItem(DrawContext context, ItemStack stack, int x, int y, String amountText) {
-        context.getMatrices().push();
-        context.getMatrices().translate(0.0F, 0.0F, 232.0F);
+        MatrixStack matrices = context.getMatrices();
+        matrices.push();
+        matrices.translate(0.0F, 0.0F, 232.0F);
         context.drawItem(stack, x, y);
         context.drawItemInSlot(this.textRenderer, stack, x, y - (this.touchDragStack.isEmpty() ? 0 : 8), amountText);
-        context.getMatrices().pop();
+        matrices.pop();
     }
 
     protected abstract void drawBackground(DrawContext context, float delta, int mouseX, int mouseY);
@@ -225,8 +228,9 @@ public abstract class LimitedHandledScreen<T extends ScreenHandler> extends Scre
             }
         }
 
-        context.getMatrices().push();
-        context.getMatrices().translate(0.0F, 0.0F, 100.0F);
+        MatrixStack matrices = context.getMatrices();
+        matrices.push();
+        matrices.translate(0.0F, 0.0F, 100.0F);
         if (itemStack.isEmpty() && isHotbarSlot(slot)) {
             Pair<Identifier, Identifier> pair = slot.getBackgroundSprite();
             if (pair != null) {
@@ -251,7 +255,7 @@ public abstract class LimitedHandledScreen<T extends ScreenHandler> extends Scre
             context.drawItemInSlot(this.textRenderer, itemStack, i, j, string);
         }
 
-        context.getMatrices().pop();
+        matrices.pop();
     }
 
     private void calculateOffset() {
@@ -285,72 +289,72 @@ public abstract class LimitedHandledScreen<T extends ScreenHandler> extends Scre
         return null;
     }
 
+    @SuppressWarnings("ConstantValue")
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         if (super.mouseClicked(mouseX, mouseY, button)) {
             return true;
+        }
+        boolean creativePickItem = this.client.options.pickItemKey.matchesMouse(button) && this.client.interactionManager.hasCreativeInventory();
+        Slot slot = this.getSlotAt(mouseX, mouseY);
+        long l = Util.getMeasuringTimeMs();
+        this.doubleClicking = this.lastClickedSlot == slot && l - this.lastButtonClickTime < 250L && this.lastClickedButton == button;
+        this.cancelNextRelease = false;
+        if (button != 0 && button != GLFW.GLFW_MOUSE_BUTTON_RIGHT && !creativePickItem) {
+            this.onMouseClick(button);
         } else {
-            boolean bl = this.client.options.pickItemKey.matchesMouse(button) && this.client.interactionManager.hasCreativeInventory();
-            Slot slot = this.getSlotAt(mouseX, mouseY);
-            long l = Util.getMeasuringTimeMs();
-            this.doubleClicking = this.lastClickedSlot == slot && l - this.lastButtonClickTime < 250L && this.lastClickedButton == button;
-            this.cancelNextRelease = false;
-            if (button != 0 && button != GLFW.GLFW_MOUSE_BUTTON_RIGHT && !bl) {
-                this.onMouseClick(button);
-            } else {
-                int i = this.x;
-                int j = this.y;
-                boolean bl2 = this.isClickOutsideBounds(mouseX, mouseY, i, j, button);
-                int k = -1;
-                if (slot != null) {
-                    k = slot.id;
-                }
+            int i = this.x;
+            int j = this.y;
+            boolean bl2 = this.isClickOutsideBounds(mouseX, mouseY, i, j, button);
+            int k = -1;
+            if (slot != null) {
+                k = slot.id;
+            }
 
-                if (this.client.options.getTouchscreen().getValue() && bl2 && this.handler.getCursorStack().isEmpty()) {
-                    this.close();
-                    return true;
-                }
+            if (this.client.options.getTouchscreen().getValue() && bl2 && this.handler.getCursorStack().isEmpty()) {
+                this.close();
+                return true;
+            }
 
-                if (k != -1) {
-                    if (this.client.options.getTouchscreen().getValue()) {
-                        if (slot != null && slot.hasStack()) {
-                            this.touchDragSlotStart = slot;
-                            this.touchDragStack = ItemStack.EMPTY;
-                            this.touchIsRightClickDrag = button == GLFW.GLFW_MOUSE_BUTTON_RIGHT;
+            if (k != -1) {
+                if (this.client.options.getTouchscreen().getValue()) {
+                    if (slot.hasStack()) {
+                        this.touchDragSlotStart = slot;
+                        this.touchDragStack = ItemStack.EMPTY;
+                        this.touchIsRightClickDrag = button == GLFW.GLFW_MOUSE_BUTTON_RIGHT;
+                    } else {
+                        this.touchDragSlotStart = null;
+                    }
+                } else if (!this.cursorDragging) {
+                    if (this.handler.getCursorStack().isEmpty()) {
+                        if (creativePickItem) {
+                            this.onMouseClick(slot, k, button, SlotActionType.CLONE);
                         } else {
-                            this.touchDragSlotStart = null;
+                            SlotActionType slotActionType = SlotActionType.PICKUP;
+                            this.onMouseClick(slot, k, button, slotActionType);
                         }
-                    } else if (!this.cursorDragging) {
-                        if (this.handler.getCursorStack().isEmpty()) {
-                            if (bl) {
-                                this.onMouseClick(slot, k, button, SlotActionType.CLONE);
-                            } else {
-                                SlotActionType slotActionType = SlotActionType.PICKUP;
-                                this.onMouseClick(slot, k, button, slotActionType);
-                            }
 
-                            this.cancelNextRelease = true;
-                        } else {
-                            this.cursorDragging = true;
-                            this.heldButtonCode = button;
-                            this.cursorDragSlots.clear();
-                            if (button == 0) {
-                                this.heldButtonType = 0;
-                            } else if (button == GLFW.GLFW_MOUSE_BUTTON_RIGHT) {
-                                this.heldButtonType = 1;
-                            } else if (bl) {
-                                this.heldButtonType = 2;
-                            }
+                        this.cancelNextRelease = true;
+                    } else {
+                        this.cursorDragging = true;
+                        this.heldButtonCode = button;
+                        this.cursorDragSlots.clear();
+                        if (button == 0) {
+                            this.heldButtonType = 0;
+                        } else if (button == GLFW.GLFW_MOUSE_BUTTON_RIGHT) {
+                            this.heldButtonType = 1;
+                        } else if (creativePickItem) {
+                            this.heldButtonType = 2;
                         }
                     }
                 }
             }
-
-            this.lastClickedSlot = slot;
-            this.lastButtonClickTime = l;
-            this.lastClickedButton = button;
-            return true;
         }
+
+        this.lastClickedSlot = slot;
+        this.lastButtonClickTime = l;
+        this.lastClickedButton = button;
+        return true;
     }
 
     private void onMouseClick(int button) {

@@ -9,8 +9,8 @@ import dev.doctor4t.trainmurdermystery.compat.TrainVoicePlugin;
 import dev.doctor4t.trainmurdermystery.entity.FirecrackerEntity;
 import dev.doctor4t.trainmurdermystery.entity.NoteEntity;
 import dev.doctor4t.trainmurdermystery.entity.PlayerBodyEntity;
-import dev.doctor4t.trainmurdermystery.event.AllowPlayerDeath;
-import dev.doctor4t.trainmurdermystery.event.ShouldDropOnDeath;
+import dev.doctor4t.trainmurdermystery.api.event.AllowPlayerDeath;
+import dev.doctor4t.trainmurdermystery.api.event.ShouldDropOnDeath;
 import dev.doctor4t.trainmurdermystery.index.TMMDataComponentTypes;
 import dev.doctor4t.trainmurdermystery.index.TMMEntities;
 import dev.doctor4t.trainmurdermystery.index.TMMItems;
@@ -26,6 +26,7 @@ import net.minecraft.block.pattern.CachedBlockPosition;
 import net.minecraft.component.ComponentMap;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.LoreComponent;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.player.ItemCooldownManager;
@@ -275,15 +276,10 @@ public class GameFunctions {
         tryResetTrain(world);
 
         // discard all player bodies
-        // TODO: optimize the heck out of this
-        for (PlayerBodyEntity body : world.getEntitiesByType(TMMEntities.PLAYER_BODY, playerBodyEntity -> true)) {
-            body.discard();
-        }
-        for (FirecrackerEntity entity : world.getEntitiesByType(TMMEntities.FIRECRACKER, entity -> true)) {
-            entity.discard();
-        }
-        for (NoteEntity entity : world.getEntitiesByType(TMMEntities.NOTE, entity -> true)){
-            entity.discard();
+        for (Entity entity : world.iterateEntities()) {
+            if (entity instanceof PlayerBodyEntity || entity instanceof FirecrackerEntity || entity instanceof NoteEntity) {
+                entity.discard();
+            }
         }
 
         // reset all players
@@ -301,7 +297,7 @@ public class GameFunctions {
     }
 
     public static void resetPlayer(ServerPlayerEntity player) {
-        ServerPlayNetworking.send(player, new AnnounceEndingS2CPayload());
+        ServerPlayNetworking.send(player, AnnounceEndingS2CPayload.INSTANCE);
         player.dismountVehicle();
         player.getInventory().clear();
         PlayerMoodComponent.KEY.get(player).reset();
@@ -528,16 +524,11 @@ public class GameFunctions {
             }
 
             // discard all player bodies and items
-            for (PlayerBodyEntity body : serverWorld.getEntitiesByType(TMMEntities.PLAYER_BODY, playerBodyEntity -> true)) {
-                body.discard();
+            for (Entity entity : serverWorld.iterateEntities()) {
+                if (entity instanceof PlayerBodyEntity || entity instanceof FirecrackerEntity || entity instanceof NoteEntity || entity instanceof ItemEntity) {
+                    entity.discard();
+                }
             }
-            for (ItemEntity item : serverWorld.getEntitiesByType(EntityType.ITEM, playerBodyEntity -> true)) {
-                item.discard();
-            }
-            // TODO: optimize the heck out of this also
-            for (FirecrackerEntity entity : serverWorld.getEntitiesByType(TMMEntities.FIRECRACKER, entity -> true)) entity.discard();
-            for (NoteEntity entity : serverWorld.getEntitiesByType(TMMEntities.NOTE, entity -> true)) entity.discard();
-
 
             TMM.LOGGER.info("Train reset successful.");
             return false;

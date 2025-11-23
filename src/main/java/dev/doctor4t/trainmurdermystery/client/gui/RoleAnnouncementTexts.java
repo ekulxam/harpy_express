@@ -1,17 +1,21 @@
 package dev.doctor4t.trainmurdermystery.client.gui;
 
 import dev.doctor4t.trainmurdermystery.game.GameFunctions;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.text.Text;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Function;
 
-public class RoleAnnouncementTexts {
-    public static final ArrayList<RoleAnnouncementTexts.RoleAnnouncementText> ROLE_ANNOUNCEMENT_TEXTS = new ArrayList<>();
+@Environment(EnvType.CLIENT)
+public final class RoleAnnouncementTexts {
+    public static final List<RoleAnnouncementText> ROLE_ANNOUNCEMENT_TEXTS = new ArrayList<>();
 
-    public static RoleAnnouncementTexts.RoleAnnouncementText registerRoleAnnouncementText(RoleAnnouncementTexts.RoleAnnouncementText role) {
+    public static RoleAnnouncementText registerRoleAnnouncementText(RoleAnnouncementText role) {
         ROLE_ANNOUNCEMENT_TEXTS.add(role);
         return role;
     }
@@ -21,6 +25,9 @@ public class RoleAnnouncementTexts {
     public static final RoleAnnouncementText VIGILANTE = registerRoleAnnouncementText(new RoleAnnouncementText("vigilante", 0x1B8AE5));
     public static final RoleAnnouncementText KILLER = registerRoleAnnouncementText(new RoleAnnouncementText("killer", 0xC13838));
     public static final RoleAnnouncementText LOOSE_END = registerRoleAnnouncementText(new RoleAnnouncementText("loose_end", 0x9F0000));
+
+    private RoleAnnouncementTexts() {
+    }
 
     public static class RoleAnnouncementText {
         private final String name;

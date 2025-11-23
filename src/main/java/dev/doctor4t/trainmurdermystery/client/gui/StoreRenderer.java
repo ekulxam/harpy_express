@@ -3,6 +3,8 @@ package dev.doctor4t.trainmurdermystery.client.gui;
 import dev.doctor4t.trainmurdermystery.api.TMMRoles;
 import dev.doctor4t.trainmurdermystery.cca.GameWorldComponent;
 import dev.doctor4t.trainmurdermystery.cca.PlayerShopComponent;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
@@ -14,9 +16,13 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
-public class StoreRenderer {
+@Environment(EnvType.CLIENT)
+public final class StoreRenderer {
     public static MoneyNumberRenderer view = new MoneyNumberRenderer();
     public static float offsetDelta = 0f;
+
+    private StoreRenderer() {
+    }
 
     public static void renderHud(TextRenderer renderer, @NotNull ClientPlayerEntity player, @NotNull DrawContext context, float delta) {
         if (!GameWorldComponent.KEY.get(player.getWorld()).isRole(player, TMMRoles.KILLER)) return;
@@ -29,10 +35,11 @@ public class StoreRenderer {
         float green = offsetDelta < 0 ? 1f + offsetDelta : 1f;
         float blue = 1f - Math.abs(offsetDelta);
         int colour = MathHelper.packRgb(red, green, blue) | 0xFF000000;
-        context.getMatrices().push();
-        context.getMatrices().translate(context.getScaledWindowWidth() - 12, 6, 0);
+        MatrixStack matrices = context.getMatrices();
+        matrices.push();
+        matrices.translate(context.getScaledWindowWidth() - 12, 6, 0);
         view.render(renderer, context, 0, 0, colour, delta);
-        context.getMatrices().pop();
+        matrices.pop();
         offsetDelta = MathHelper.lerp(delta / 16, offsetDelta, 0f);
     }
 
@@ -62,18 +69,19 @@ public class StoreRenderer {
         }
 
         public void render(TextRenderer renderer, @NotNull DrawContext context, int x, int y, int colour, float delta) {
-            context.getMatrices().push();
-            context.getMatrices().translate(x, y, 0);
+            MatrixStack matrices = context.getMatrices();
+            matrices.push();
+            matrices.translate(x, y, 0);
             context.drawTextWithShadow(renderer, "\uE781", 0, 0, colour);
             int offset = -8;
             for (ScrollingDigit digit : this.digits) {
-                context.getMatrices().push();
-                context.getMatrices().translate(offset, 0, 0);
+                matrices.push();
+                matrices.translate(offset, 0, 0);
                 digit.render(renderer, context, colour, delta);
                 offset -= 8;
-                context.getMatrices().pop();
+                matrices.pop();
             }
-            context.getMatrices().pop();
+            matrices.pop();
         }
 
         public float getTarget() {

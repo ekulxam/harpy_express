@@ -8,6 +8,8 @@ import dev.doctor4t.trainmurdermystery.client.TMMClient;
 import dev.doctor4t.trainmurdermystery.game.GameConstants;
 import dev.doctor4t.trainmurdermystery.game.GameFunctions;
 import dev.doctor4t.trainmurdermystery.index.TMMSounds;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.block.entity.SkullBlockEntity;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
@@ -15,7 +17,6 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.network.PlayerListEntry;
 import net.minecraft.client.option.GameOptions;
-import net.minecraft.client.util.SkinTextures;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.sound.SoundCategory;
@@ -30,8 +31,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-public class RoundTextRenderer {
-    private static final Map<String, Optional<GameProfile>> failCache = new HashMap<>();
+@Environment(EnvType.CLIENT)
+public final class RoundTextRenderer {
+    private static final Map<String, GameProfile> failCache = new HashMap<>();
     private static final int WELCOME_DURATION = 200 + GameConstants.FADE_TIME * 2;
     private static final int END_DURATION = 200;
     private static RoleAnnouncementTexts.RoleAnnouncementText role = RoleAnnouncementTexts.CIVILIAN;
@@ -39,6 +41,9 @@ public class RoundTextRenderer {
     private static int killers = 0;
     private static int targets = 0;
     private static int endTime = 0;
+
+    private RoundTextRenderer() {
+    }
 
     @SuppressWarnings("IntegerDivisionInFloatingPointContext")
     public static void renderHud(TextRenderer renderer, ClientPlayerEntity player, @NotNull DrawContext context) {
@@ -232,15 +237,11 @@ public class RoundTextRenderer {
     }
 
     public static GameProfile getGameProfile(String disguise) {
-        Optional<GameProfile> optional = SkullBlockEntity.fetchProfileByName(disguise).getNow(failCache(disguise));
-        return optional.orElse(failCache(disguise).get());
+        Optional<GameProfile> optional = SkullBlockEntity.fetchProfileByName(disguise).getNow(Optional.of(failCache(disguise)));
+        return optional.orElse(failCache(disguise));
     }
 
-    public static SkinTextures getSkinTextures(String disguise) {
-        return MinecraftClient.getInstance().getSkinProvider().getSkinTextures(getGameProfile(disguise));
-    }
-
-    public static Optional<GameProfile> failCache(String name) {
-        return failCache.computeIfAbsent(name, (d) -> Optional.of(new GameProfile(UUID.randomUUID(), name)));
+    public static GameProfile failCache(String name) {
+        return failCache.computeIfAbsent(name, (d) -> new GameProfile(UUID.randomUUID(), name));
     }
 }

@@ -9,6 +9,7 @@ import org.joml.Vector3f;
  * @author EightSidedSquare
  * @author Geckolib authors
  */
+@SuppressWarnings("unused")
 public class Interpolations {
 
     public static final Transformation.Interpolation LINEAR = Transformation.Interpolations.LINEAR;

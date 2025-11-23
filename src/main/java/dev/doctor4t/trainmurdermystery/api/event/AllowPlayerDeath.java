@@ -1,4 +1,4 @@
-package dev.doctor4t.trainmurdermystery.event;
+package dev.doctor4t.trainmurdermystery.api.event;
 
 import net.fabricmc.fabric.api.event.Event;
 import net.minecraft.entity.player.PlayerEntity;

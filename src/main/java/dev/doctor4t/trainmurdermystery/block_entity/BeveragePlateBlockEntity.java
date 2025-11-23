@@ -1,7 +1,7 @@
 package dev.doctor4t.trainmurdermystery.block_entity;
 
 import dev.doctor4t.trainmurdermystery.client.TMMClient;
-import dev.doctor4t.trainmurdermystery.event.CanSeePoison;
+import dev.doctor4t.trainmurdermystery.api.event.CanSeePoison;
 import dev.doctor4t.trainmurdermystery.index.TMMBlockEntities;
 import dev.doctor4t.trainmurdermystery.index.TMMParticles;
 import net.minecraft.block.BlockState;
@@ -45,7 +45,9 @@ public class BeveragePlateBlockEntity extends BlockEntity {
         if ((!TMMClient.isKiller() && !CanSeePoison.EVENT.invoker().visible(MinecraftClient.getInstance().player)) || tray.poisoner == null) {
             return;
         }
-        if (world.getRandom().nextBetween(0, 20) < 17) return;
+        if (world.getRandom().nextBetween(0, 20) < 17) {
+            return;
+        }
         world.addParticle(
                 TMMParticles.POISON,
                 pos.getX() + 0.5f,

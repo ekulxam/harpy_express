@@ -5,10 +5,13 @@ import dev.doctor4t.trainmurdermystery.cca.GameWorldComponent;
 import dev.doctor4t.trainmurdermystery.cca.PlayerPsychoComponent;
 import dev.doctor4t.trainmurdermystery.entity.NoteEntity;
 import dev.doctor4t.trainmurdermystery.game.GameFunctions;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.render.RenderTickCounter;
+import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.ProjectileUtil;
 import net.minecraft.text.Text;
@@ -19,17 +22,24 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.LightType;
 import org.jetbrains.annotations.NotNull;
 
-public class RoleNameRenderer {
+@Environment(EnvType.CLIENT)
+public final class RoleNameRenderer {
     private static TrainRole targetRole = TrainRole.BYSTANDER;
     private static float nametagAlpha = 0f;
     private static float noteAlpha = 0f;
     private static Text nametag = Text.empty();
     private static final Text[] note = new Text[]{Text.empty(), Text.empty(), Text.empty(), Text.empty()};
 
+    private RoleNameRenderer() {
+    }
+
     // TODO: fix after vars
     public static void renderHud(TextRenderer renderer, @NotNull ClientPlayerEntity player, DrawContext context, RenderTickCounter tickCounter) {
         GameWorldComponent component = GameWorldComponent.KEY.get(player.getWorld());
-        if (player.getWorld().getLightLevel(LightType.BLOCK, BlockPos.ofFloored(player.getEyePos())) < 3 && player.getWorld().getLightLevel(LightType.SKY, BlockPos.ofFloored(player.getEyePos())) < 10) return;
+        if (player.getWorld().getLightLevel(LightType.BLOCK, BlockPos.ofFloored(player.getEyePos())) < 3 && player.getWorld().getLightLevel(LightType.SKY, BlockPos.ofFloored(player.getEyePos())) < 10) {
+            return;
+        }
+
         float range = GameFunctions.isPlayerSpectatingOrCreative(player) ? 8f : 2f;
         if (ProjectileUtil.getCollision(player, entity -> entity instanceof PlayerEntity, range) instanceof EntityHitResult entityHitResult && entityHitResult.getEntity() instanceof PlayerEntity target) {
             nametagAlpha = MathHelper.lerp(tickCounter.getTickDelta(true) / 4, nametagAlpha, 1f);
@@ -44,44 +54,46 @@ public class RoleNameRenderer {
         } else {
             nametagAlpha = MathHelper.lerp(tickCounter.getTickDelta(true) / 4, nametagAlpha, 0f);
         }
+
+        MatrixStack matrices = context.getMatrices();
         if (nametagAlpha > 0.05f) {
-            context.getMatrices().push();
-            context.getMatrices().translate(context.getScaledWindowWidth() / 2f, context.getScaledWindowHeight() / 2f + 6, 0);
-            context.getMatrices().scale(0.6f, 0.6f, 1f);
+            matrices.push();
+            matrices.translate(context.getScaledWindowWidth() / 2f, context.getScaledWindowHeight() / 2f + 6, 0);
+            matrices.scale(0.6f, 0.6f, 1f);
             int nameWidth = renderer.getWidth(nametag);
             context.drawTextWithShadow(renderer, nametag, -nameWidth / 2, 16, MathHelper.packRgb(1f, 1f, 1f) | ((int) (nametagAlpha * 255) << 24));
             if (component.isRunning()) {
                 TrainRole playerRole = TrainRole.BYSTANDER;
                 if (component.isRole(player, TMMRoles.KILLER)) playerRole = TrainRole.KILLER;
                 if (playerRole == TrainRole.KILLER && targetRole == TrainRole.KILLER) {
-                    context.getMatrices().translate(0, 20 + renderer.fontHeight, 0);
+                    matrices.translate(0, 20 + renderer.fontHeight, 0);
                     Text roleText = Text.translatable("game.tip.cohort");
                     int roleWidth = renderer.getWidth(roleText);
                     context.drawTextWithShadow(renderer, roleText, -roleWidth / 2, 0, MathHelper.packRgb(1f, 0f, 0f) | ((int) (nametagAlpha * 255) << 24));
                 }
             }
-            context.getMatrices().pop();
+            matrices.pop();
         }
-        if (ProjectileUtil.getCollision(player, entity -> entity instanceof NoteEntity, range) instanceof EntityHitResult entityHitResult && entityHitResult.getEntity() instanceof NoteEntity note) {
+        if (ProjectileUtil.getCollision(player, entity -> entity instanceof NoteEntity, range) instanceof EntityHitResult entityHitResult && entityHitResult.getEntity() instanceof NoteEntity noteEntity) {
             noteAlpha = MathHelper.lerp(tickCounter.getTickDelta(true) / 4, noteAlpha, 1f);
             nametagAlpha = MathHelper.lerp(tickCounter.getTickDelta(true), nametagAlpha, 0f);
-            RoleNameRenderer.note[0] = Text.literal(note.getLines()[0]);
-            RoleNameRenderer.note[1] = Text.literal(note.getLines()[1]);
-            RoleNameRenderer.note[2] = Text.literal(note.getLines()[2]);
-            RoleNameRenderer.note[3] = Text.literal(note.getLines()[3]);
+            RoleNameRenderer.note[0] = Text.literal(noteEntity.getLines()[0]);
+            RoleNameRenderer.note[1] = Text.literal(noteEntity.getLines()[1]);
+            RoleNameRenderer.note[2] = Text.literal(noteEntity.getLines()[2]);
+            RoleNameRenderer.note[3] = Text.literal(noteEntity.getLines()[3]);
         } else {
             noteAlpha = MathHelper.lerp(tickCounter.getTickDelta(true) / 4, noteAlpha, 0f);
         }
         if (noteAlpha > 0.05f) {
-            context.getMatrices().push();
-            context.getMatrices().translate(context.getScaledWindowWidth() / 2f, context.getScaledWindowHeight() / 2f + 6, 0);
-            context.getMatrices().scale(0.6f, 0.6f, 1f);
+            matrices.push();
+            matrices.translate(context.getScaledWindowWidth() / 2f, context.getScaledWindowHeight() / 2f + 6, 0);
+            matrices.scale(0.6f, 0.6f, 1f);
             for (int i = 0; i < note.length; i++) {
                 Text line = note[i];
                 int lineWidth = renderer.getWidth(line);
                 context.drawTextWithShadow(renderer, line, -lineWidth / 2, 16 + (i * (renderer.fontHeight + 2)), MathHelper.packRgb(1f, 1f, 1f) | ((int) (noteAlpha * 255) << 24));
             }
-            context.getMatrices().pop();
+            matrices.pop();
         }
     }
 

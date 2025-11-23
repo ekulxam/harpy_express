@@ -5,7 +5,6 @@ import dev.doctor4t.trainmurdermystery.block.property.OrnamentShape;
 import dev.doctor4t.trainmurdermystery.index.TMMProperties;
 import dev.doctor4t.trainmurdermystery.mixin.AbstractBlockInvoker;
 import dev.doctor4t.trainmurdermystery.util.BlockUtils;
-import net.fabricmc.fabric.mixin.object.builder.AbstractBlockAccessor;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.FacingBlock;

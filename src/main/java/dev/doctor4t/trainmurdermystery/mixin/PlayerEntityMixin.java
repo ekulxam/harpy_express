@@ -4,7 +4,6 @@ import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.mojang.datafixers.util.Either;
-import dev.doctor4t.trainmurdermystery.api.TMMRoles;
 import dev.doctor4t.trainmurdermystery.cca.GameWorldComponent;
 import dev.doctor4t.trainmurdermystery.cca.PlayerMoodComponent;
 import dev.doctor4t.trainmurdermystery.cca.PlayerPoisonComponent;
@@ -147,9 +146,10 @@ public abstract class PlayerEntityMixin extends LivingEntity {
     @ModifyReturnValue(method = "trySleep", at = @At("TAIL"))
     private Either<PlayerEntity.SleepFailureReason, Unit> poisonSleepMessage(Either<PlayerEntity.SleepFailureReason, Unit> original) {
         PlayerEntity self = (PlayerEntity) (Object) (this);
-        if (!original.right().isPresent() || !(self instanceof ServerPlayerEntity serverPlayer)) {
+        if (original.right().isEmpty() || !(self instanceof ServerPlayerEntity serverPlayer)) {
             return original;
         }
+
         if (this.trainmurdermystery$poisonSleepTask != null) {
             this.trainmurdermystery$poisonSleepTask.cancel();
         }

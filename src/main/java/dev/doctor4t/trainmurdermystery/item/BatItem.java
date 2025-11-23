@@ -10,7 +10,6 @@ import net.minecraft.util.Identifier;
 import java.util.List;
 
 public class BatItem extends Item {
-    public static final Identifier BAT_DEATH_REASON = TMM.id("bat_hit");
     public BatItem(Settings settings) {
         super(settings);
     }

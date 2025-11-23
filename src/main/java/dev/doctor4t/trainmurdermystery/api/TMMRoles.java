@@ -4,9 +4,11 @@ import dev.doctor4t.trainmurdermystery.TMM;
 import net.minecraft.util.Identifier;
 
 import java.util.ArrayList;
+import java.util.List;
 
+@SuppressWarnings("unused")
 public class TMMRoles {
-    public static final ArrayList<Role> ROLES = new ArrayList<>();
+    public static final List<Role> ROLES = new ArrayList<>();
 
     public static final Role CIVILIAN = registerRole(new Role(TMM.id("civilian"), 0x36E51B, true));
     public static final Role VIGILANTE = registerRole(new Role(TMM.id("vigilante"), 0x1B8AE5, true));
@@ -18,11 +20,33 @@ public class TMMRoles {
         return role;
     }
 
-    /**
-     * @param identifier the mod id and name of the role
-     * @param color      the role announcement color
-     * @param isInnocent whether the gun drops when a person with this role is shot
-     */
-    public record Role(Identifier identifier, int color, boolean isInnocent) {
+    @SuppressWarnings("ClassCanBeRecord")
+    public static class Role {
+        protected final Identifier identifier;
+        protected final int color;
+        protected final boolean innocent;
+
+        /**
+         * @param identifier the mod id and name of the role
+         * @param color      the role announcement color
+         * @param innocent whether the gun drops when a person with this role is shot
+         */
+        public Role(Identifier identifier, int color, boolean innocent) {
+            this.identifier = identifier;
+            this.color = color;
+            this.innocent = innocent;
+        }
+
+        public Identifier getId() {
+            return this.identifier;
+        }
+
+        public int getColor() {
+            return this.color;
+        }
+
+        public boolean isInnocent() {
+            return this.innocent;
+        }
     }
 }

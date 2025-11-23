@@ -4,7 +4,9 @@ import dev.doctor4t.ratatouille.util.registrar.SoundEventRegistrar;
 import dev.doctor4t.trainmurdermystery.TMM;
 import net.minecraft.sound.BlockSoundGroup;
 import net.minecraft.sound.SoundEvent;
+import org.jetbrains.annotations.ApiStatus;
 
+@ApiStatus.NonExtendable
 public interface TMMSounds {
     SoundEventRegistrar registrar = new SoundEventRegistrar(TMM.MOD_ID);
 

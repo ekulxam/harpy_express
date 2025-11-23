@@ -4,7 +4,9 @@ import dev.doctor4t.trainmurdermystery.TMM;
 import net.minecraft.block.Block;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.tag.TagKey;
+import org.jetbrains.annotations.ApiStatus;
 
+@ApiStatus.NonExtendable
 public interface TMMBlockTags {
 
     TagKey<Block> BRANCHES = create("branches");

@@ -82,7 +82,8 @@ public class PlayerBodyEntity extends LivingEntity {
     }
 
     public static DefaultAttributeContainer.Builder createAttributes() {
-        return MobEntity.createMobAttributes().add(EntityAttributes.GENERIC_MAX_HEALTH, 999999.0);
+        return MobEntity.createMobAttributes()
+                .add(EntityAttributes.GENERIC_MAX_HEALTH, 999999.0);
     }
 
     @Override
@@ -96,16 +97,16 @@ public class PlayerBodyEntity extends LivingEntity {
     @Override
     public void readCustomDataFromNbt(NbtCompound nbt) {
         super.readCustomDataFromNbt(nbt);
-        UUID uUID;
+        UUID uuid;
         if (nbt.containsUuid("Player")) {
-            uUID = nbt.getUuid("Player");
+            uuid = nbt.getUuid("Player");
         } else {
             String string = nbt.getString("Player");
-            uUID = ServerConfigHandler.getPlayerUuidByName(this.getServer(), string);
+            uuid = ServerConfigHandler.getPlayerUuidByName(this.getServer(), string);
         }
 
-        if (uUID != null) {
-            this.setPlayerUuid(uUID);
+        if (uuid != null) {
+            this.setPlayerUuid(uuid);
         }
     }
 

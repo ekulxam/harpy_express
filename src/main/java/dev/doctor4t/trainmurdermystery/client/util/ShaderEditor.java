@@ -10,7 +10,7 @@ import java.util.List;
 @SuppressWarnings("ClassCanBeRecord")
 @Environment(EnvType.CLIENT)
 public class ShaderEditor {
-    private final List<String> lines;
+    protected final List<String> lines;
 
     public ShaderEditor(String shaderSource) {
         this.lines = new ArrayList<>(Arrays.asList(shaderSource.split("\n")));

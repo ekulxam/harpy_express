@@ -1,5 +1,6 @@
 package dev.doctor4t.trainmurdermystery.game;
 
+import dev.doctor4t.trainmurdermystery.TMM;
 import dev.doctor4t.trainmurdermystery.cca.PlayerShopComponent;
 import dev.doctor4t.trainmurdermystery.index.TMMItems;
 import dev.doctor4t.trainmurdermystery.util.ShopEntry;
@@ -7,9 +8,11 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -19,6 +22,7 @@ import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+@ApiStatus.NonExtendable
 public interface GameConstants {
     // Logistics
     int FADE_TIME = 40;
@@ -119,5 +123,15 @@ public interface GameConstants {
 
     static int getInTicks(int minutes, int seconds) {
         return (minutes * 60 + seconds) * 20;
+    }
+
+    interface DeathReasons {
+        Identifier GENERIC = TMM.id("generic");
+        Identifier FELL_OUT_OF_TRAIN = TMM.id("fell_out_of_train");
+        Identifier GRENADE = TMM.id("grenade");
+        Identifier POISON = TMM.id("poison");
+        Identifier BAT = TMM.id("bat_hit");
+        Identifier KNIFE = TMM.id("knife_stab");
+        Identifier GUN = TMM.id("gun_shot");
     }
 }

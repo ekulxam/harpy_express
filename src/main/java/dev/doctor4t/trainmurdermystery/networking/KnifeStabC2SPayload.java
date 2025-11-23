@@ -35,7 +35,8 @@ public record KnifeStabC2SPayload(int target) implements CustomPayload {
             if (target.distanceTo(player) > 3.0) {
                 return;
             }
-            GameFunctions.killPlayer(target, true, player, TMM.id("knife_stab"));
+
+            GameFunctions.killPlayer(target, true, player, GameConstants.DeathReasons.KNIFE);
             target.playSound(TMMSounds.ITEM_KNIFE_STAB, 1.0f, 1.0f);
             player.swingHand(Hand.MAIN_HAND);
             if (!player.isCreative() && GameWorldComponent.KEY.get(context.player().getWorld()).getGameMode() != GameWorldComponent.GameMode.LOOSE_ENDS) {

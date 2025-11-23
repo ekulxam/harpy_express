@@ -1,6 +1,5 @@
 package dev.doctor4t.trainmurdermystery;
 
-import com.google.common.reflect.Reflection;
 import dev.doctor4t.trainmurdermystery.block.DoorPartBlock;
 import dev.doctor4t.trainmurdermystery.cca.GameWorldComponent;
 import dev.doctor4t.trainmurdermystery.command.*;
@@ -38,6 +37,7 @@ public class TMM implements ModInitializer {
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
     public static final boolean DEVELOPMENT = FabricLoader.getInstance().isDevelopmentEnvironment();
+    public static final Identifier COMMAND_ACCESS = id("commandaccess");
 
     public static @NotNull Identifier id(String name) {
         return Identifier.of(MOD_ID, name);
@@ -49,7 +49,7 @@ public class TMM implements ModInitializer {
         GameConstants.init();
 
         // Registry initializers
-        Reflection.initialize(TMMDataComponentTypes.class);
+        TMMDataComponentTypes.initialize();
         TMMSounds.initialize();
         TMMEntities.initialize();
         TMMBlockEntities.initialize();
@@ -114,6 +114,7 @@ public class TMM implements ModInitializer {
             for (int z = -1; z <= 1; z += 2) {
                 blockPos.set(playerPos.getX() + x, playerPos.getY(), playerPos.getZ() + z);
                 if (player.getWorld().isSkyVisible(blockPos)) {
+                    // uh is this correct - SkyNotTheLimit
                     return !(player.getWorld().getBlockState(playerPos).getBlock() instanceof DoorPartBlock);
                 }
             }
@@ -132,8 +133,6 @@ public class TMM implements ModInitializer {
         }
         return true;
     }
-
-    public static final Identifier COMMAND_ACCESS = id("commandaccess");
 
     public static int executeSupporterCommand(ServerCommandSource source, Runnable runnable) {
         ServerPlayerEntity player = source.getPlayer();

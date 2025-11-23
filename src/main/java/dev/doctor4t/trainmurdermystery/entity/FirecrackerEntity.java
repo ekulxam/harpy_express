@@ -23,12 +23,15 @@ public class FirecrackerEntity extends Entity {
         super.tick();
         double angle = Math.toRadians(this.getYaw() + 110);
         Vector3d particlePos = new Vector3d(Math.cos(angle), .1f, Math.sin(angle)).mul(0.3f);
-        if (!(this.getWorld() instanceof ServerWorld serverWorld)) {
+
+        World world = this.getWorld();
+        if (!(world instanceof ServerWorld serverWorld)) {
             if (this.age % 5 == 0) {
-                this.getWorld().addParticle(ParticleTypes.SMOKE, this.getX() + particlePos.x(), this.getY() + particlePos.y(), this.getZ() + particlePos.z(), 0, 0, 0);
+                world.addParticle(ParticleTypes.SMOKE, this.getX() + particlePos.x(), this.getY() + particlePos.y(), this.getZ() + particlePos.z(), 0, 0, 0);
             }
             return;
         }
+
         if (this.age >= GameConstants.FIRECRACKER_TIMER) {
             serverWorld.playSound(null, this.getBlockPos(), TMMSounds.ITEM_REVOLVER_SHOOT, SoundCategory.PLAYERS, 5f, 1f + this.getRandom().nextFloat() * .1f - .05f);
             serverWorld.spawnParticles(TMMParticles.EXPLOSION, this.getX(), this.getY() + .1f, this.getZ(), 1, 0, 0, 0, 0);

@@ -16,10 +16,12 @@ import net.minecraft.sound.BlockSoundGroup;
 import net.minecraft.state.property.Properties;
 import net.minecraft.util.DyeColor;
 import net.minecraft.util.Rarity;
+import org.jetbrains.annotations.ApiStatus;
 
 import java.util.function.ToIntFunction;
 
 @SuppressWarnings("unchecked")
+@ApiStatus.NonExtendable
 public interface TMMBlocks {
     BlockRegistrar registrar = new BlockRegistrar(TMM.MOD_ID);
 

@@ -10,7 +10,9 @@ import dev.doctor4t.trainmurdermystery.entity.PlayerBodyEntity;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.SpawnGroup;
+import org.jetbrains.annotations.ApiStatus;
 
+@ApiStatus.NonExtendable
 public interface TMMEntities {
     EntityTypeRegistrar registrar = new EntityTypeRegistrar(TMM.MOD_ID);
 

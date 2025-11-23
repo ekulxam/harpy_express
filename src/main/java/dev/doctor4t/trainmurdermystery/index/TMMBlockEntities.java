@@ -5,7 +5,9 @@ import dev.doctor4t.trainmurdermystery.TMM;
 import dev.doctor4t.trainmurdermystery.block.entity.HornBlockEntity;
 import dev.doctor4t.trainmurdermystery.block_entity.*;
 import net.minecraft.block.entity.BlockEntityType;
+import org.jetbrains.annotations.ApiStatus;
 
+@ApiStatus.NonExtendable
 public interface TMMBlockEntities {
     BlockEntityTypeRegistrar registrar = new BlockEntityTypeRegistrar(TMM.MOD_ID);
 

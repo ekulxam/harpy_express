@@ -34,20 +34,20 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
 
     private boolean lockedToSupporters = false;
     private boolean enableWeights = false;
+    private GameMode gameMode = GameMode.MURDER;
 
     public void setWeightsEnabled(boolean enabled) {
         this.enableWeights = enabled;
     }
 
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public boolean areWeightsEnabled() {
-        return enableWeights;
+        return this.enableWeights;
     }
 
     public enum GameStatus {
         INACTIVE, STARTING, ACTIVE, STOPPING
     }
-
-    private GameMode gameMode = GameMode.MURDER;
 
     public enum GameMode implements StringIdentifiable {
         MURDER(10),
@@ -232,7 +232,7 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
         this.psychosActive = nbtCompound.getInt("PsychosActive");
 
         for (TMMRoles.Role role : TMMRoles.ROLES) {
-            this.setRoles(uuidListFromNbt(nbtCompound, role.identifier().toString()), role);
+            this.setRoles(uuidListFromNbt(nbtCompound, role.getId().toString()), role);
         }
 
         if (nbtCompound.contains("LooseEndWinner")) {
@@ -262,7 +262,7 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
         nbtCompound.putInt("PsychosActive", psychosActive);
 
         for (TMMRoles.Role role : TMMRoles.ROLES) {
-            nbtCompound.put(role.identifier().toString(), nbtFromUuidList(getAllWithRole(role)));
+            nbtCompound.put(role.getId().toString(), nbtFromUuidList(getAllWithRole(role)));
         }
 
         if (this.looseEndWinner != null) nbtCompound.putUuid("LooseEndWinner", this.looseEndWinner);
@@ -371,7 +371,7 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
         for (ServerPlayerEntity player : serverWorld.getPlayers()) {
             // kill players who fell off the train
             if (GameFunctions.isPlayerAliveAndSurvival(player) && player.getY() < GameConstants.PLAY_AREA.minY) {
-                GameFunctions.killPlayer(player, false, player.getLastAttacker() instanceof PlayerEntity killerPlayer ? killerPlayer : null, TMM.id("fell_out_of_train"));
+                GameFunctions.killPlayer(player, false, player.getLastAttacker() instanceof PlayerEntity killerPlayer ? killerPlayer : null, GameConstants.DeathReasons.GENERIC);
             }
 
             // passive money

@@ -11,8 +11,11 @@ import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.text.Text;
+import org.jetbrains.annotations.ApiStatus;
 
-public @SuppressWarnings("unchecked") interface TMMItems {
+@SuppressWarnings("unchecked")
+@ApiStatus.NonExtendable
+public interface TMMItems {
     ItemRegistrar registrar = new ItemRegistrar(TMM.MOD_ID);
 
     RegistryKey<ItemGroup> BUILDING_GROUP = RegistryKey.of(RegistryKeys.ITEM_GROUP, TMM.id("building"));

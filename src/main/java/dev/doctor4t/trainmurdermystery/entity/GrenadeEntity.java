@@ -1,6 +1,6 @@
 package dev.doctor4t.trainmurdermystery.entity;
 
-import dev.doctor4t.trainmurdermystery.TMM;
+import dev.doctor4t.trainmurdermystery.game.GameConstants;
 import dev.doctor4t.trainmurdermystery.game.GameFunctions;
 import dev.doctor4t.trainmurdermystery.index.TMMEntities;
 import dev.doctor4t.trainmurdermystery.index.TMMItems;
@@ -15,14 +15,11 @@ import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
-import net.minecraft.util.Identifier;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.Box;
 import net.minecraft.world.World;
 
 public class GrenadeEntity extends ThrownItemEntity {
-    public static final Identifier GRENADE_DEATH_REASON = TMM.id("grenade");
-
     public GrenadeEntity(EntityType<?> ignored, World world) {
         super(TMMEntities.GRENADE, world);
     }
@@ -35,25 +32,29 @@ public class GrenadeEntity extends ThrownItemEntity {
     @Override
     protected void onCollision(HitResult hitResult) {
         super.onCollision(hitResult);
-        if (this.getWorld() instanceof ServerWorld world) {
-            // consider sending these all in one packet/payload - SkyNotTheLimit
-            world.playSound(null, this.getBlockPos(), TMMSounds.ITEM_GRENADE_EXPLODE, SoundCategory.PLAYERS, 5f, 1f + this.getRandom().nextFloat() * .1f - .05f);
-            world.spawnParticles(TMMParticles.BIG_EXPLOSION, this.getX(), this.getY() + .1f, this.getZ(), 1, 0, 0, 0, 0);
-            world.spawnParticles(ParticleTypes.SMOKE, this.getX(), this.getY() + .1f, this.getZ(), 100, 0, 0, 0, .2f);
-            world.spawnParticles(new ItemStackParticleEffect(ParticleTypes.ITEM, this.getDefaultItem().getDefaultStack()), this.getX(), this.getY() + .1f, this.getZ(), 100, 0, 0, 0, 1f);
 
-            Box box = this.getBoundingBox().expand(3f);
-
-            // nullable
-            PlayerEntity killer = this.getOwner() instanceof PlayerEntity playerEntity ? playerEntity : null;
-
-            for (ServerPlayerEntity player : world.getPlayers(serverPlayerEntity ->
-                            box.contains(serverPlayerEntity.getPos()) &&
-                            GameFunctions.isPlayerAliveAndSurvival(serverPlayerEntity))) {
-                GameFunctions.killPlayer(player, true, killer, GRENADE_DEATH_REASON);
-            }
-
-            this.discard();
+        if (!(this.getWorld() instanceof ServerWorld world)) {
+            return;
         }
+
+        // consider sending these all in one packet/payload - SkyNotTheLimit
+        world.playSound(null, this.getBlockPos(), TMMSounds.ITEM_GRENADE_EXPLODE, SoundCategory.PLAYERS, 5f, 1f + this.getRandom().nextFloat() * .1f - .05f);
+        world.spawnParticles(TMMParticles.BIG_EXPLOSION, this.getX(), this.getY() + .1f, this.getZ(), 1, 0, 0, 0, 0);
+        world.spawnParticles(ParticleTypes.SMOKE, this.getX(), this.getY() + .1f, this.getZ(), 100, 0, 0, 0, .2f);
+        world.spawnParticles(new ItemStackParticleEffect(ParticleTypes.ITEM, this.getDefaultItem().getDefaultStack()), this.getX(), this.getY() + .1f, this.getZ(), 100, 0, 0, 0, 1f);
+
+        Box box = this.getBoundingBox().expand(3f);
+
+        // nullable
+        PlayerEntity killer = this.getOwner() instanceof PlayerEntity playerEntity ? playerEntity : null;
+
+        for (ServerPlayerEntity player : world.getPlayers(serverPlayerEntity ->
+                box.contains(serverPlayerEntity.getPos()) &&
+                        GameFunctions.isPlayerAliveAndSurvival(serverPlayerEntity))) {
+            GameFunctions.killPlayer(player, true, killer, GameConstants.DeathReasons.
+                    GRENADE);
+        }
+
+        this.discard();
     }
 }

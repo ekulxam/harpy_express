@@ -13,7 +13,7 @@ import org.jetbrains.annotations.NotNull;
 
 @SuppressWarnings("ClassCanBeRecord")
 public class PlateBlockEntityRenderer implements BlockEntityRenderer<BeveragePlateBlockEntity> {
-    private final ItemRenderer itemRenderer;
+    protected final ItemRenderer itemRenderer;
 
     public PlateBlockEntityRenderer(BlockEntityRendererFactory.@NotNull Context ctx) {
         this.itemRenderer = ctx.getItemRenderer();

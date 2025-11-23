@@ -4,7 +4,9 @@ import dev.doctor4t.trainmurdermystery.TMM;
 import net.minecraft.item.Item;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.tag.TagKey;
+import org.jetbrains.annotations.ApiStatus;
 
+@ApiStatus.NonExtendable
 public interface TMMItemTags {
 
     TagKey<Item> GUNS = create("guns");

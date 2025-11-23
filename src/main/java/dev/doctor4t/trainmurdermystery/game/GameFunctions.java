@@ -27,7 +27,6 @@ import net.minecraft.component.ComponentMap;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.LoreComponent;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.player.ItemCooldownManager;
 import net.minecraft.entity.player.PlayerEntity;
@@ -53,8 +52,6 @@ import java.util.*;
 import java.util.function.UnaryOperator;
 
 public class GameFunctions {
-
-    public static final Identifier GENERIC_DEATH_REASON = TMM.id("generic");
 
     public static void limitPlayerToBox(ServerPlayerEntity player, Box box) {
         Vec3d playerPos = player.getPos();
@@ -319,7 +316,7 @@ public class GameFunctions {
     }
 
     public static void killPlayer(PlayerEntity victim, boolean spawnBody, @Nullable PlayerEntity killer) {
-        killPlayer(victim, spawnBody, killer, GENERIC_DEATH_REASON);
+        killPlayer(victim, spawnBody, killer, GameConstants.DeathReasons.GENERIC);
     }
 
     public static void killPlayer(PlayerEntity victim, boolean spawnBody, @Nullable PlayerEntity killer, Identifier deathReason) {

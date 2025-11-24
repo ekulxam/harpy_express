@@ -6,12 +6,12 @@ import dev.doctor4t.trainmurdermystery.cca.GameWorldComponent;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 
-import java.util.UUID;
+import static dev.doctor4t.trainmurdermystery.TMM.DOCTOR4T;
 
 public class LockToSupportersCommand {
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         dispatcher.register(CommandManager.literal("tmm:lockToSupporters")
-                .requires(source -> source.getPlayer() != null && source.getPlayer().getUuid().equals(UUID.fromString("1b44461a-f605-4b29-a7a9-04e649d1981c")))
+                .requires(source -> source.getPlayer() != null && source.getPlayer().getUuid().equals(DOCTOR4T))
                 .then(CommandManager.argument("enabled", BoolArgumentType.bool())
                         .executes(context -> execute(context.getSource(), BoolArgumentType.getBool(context, "enabled"))))
         );

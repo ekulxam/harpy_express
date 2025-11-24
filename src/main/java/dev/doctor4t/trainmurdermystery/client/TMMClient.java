@@ -309,7 +309,7 @@ public class TMMClient implements ClientModInitializer {
                 if (client.world == null || client.player == null) {
                     return;
                 }
-                PlayerEntity shooter = client.world.getPlayerByUuid(UUID.fromString(payload.shooterId()));
+                PlayerEntity shooter = client.world.getPlayerByUuid(payload.shooterUuid());
                 if (shooter == null || shooter.getUuid() == client.player.getUuid() && client.options.getPerspective() == Perspective.FIRST_PERSON) {
                     return;
                 }

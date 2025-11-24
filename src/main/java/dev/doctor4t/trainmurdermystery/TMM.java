@@ -31,6 +31,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Optional;
+import java.util.UUID;
 
 public class TMM implements ModInitializer {
     public static final String MOD_ID = "trainmurdermystery";
@@ -38,6 +39,9 @@ public class TMM implements ModInitializer {
 
     public static final boolean DEVELOPMENT = FabricLoader.getInstance().isDevelopmentEnvironment();
     public static final Identifier COMMAND_ACCESS = id("commandaccess");
+
+    public static final UUID DOCTOR4T = UUID.fromString("1b44461a-f605-4b29-a7a9-04e649d1981c");
+    public static final UUID FOLLY = UUID.fromString("25adae11-cd98-48f4-990b-9fe1b2ee0886");
 
     public static @NotNull Identifier id(String name) {
         return Identifier.of(MOD_ID, name);

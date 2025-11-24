@@ -21,6 +21,8 @@ import net.minecraft.world.World;
 import java.util.Optional;
 import java.util.UUID;
 
+import static dev.doctor4t.trainmurdermystery.TMM.FOLLY;
+
 public class PlayerBodyEntity extends LivingEntity {
     private static final TrackedData<Optional<UUID>> PLAYER = DataTracker.registerData(PlayerBodyEntity.class, TrackedDataHandlerRegistry.OPTIONAL_UUID);
 
@@ -60,7 +62,7 @@ public class PlayerBodyEntity extends LivingEntity {
 
     public UUID getPlayerUuid() {
         Optional<UUID> optional = this.dataTracker.get(PLAYER);
-        return optional.orElseGet(() -> UUID.fromString("25adae11-cd98-48f4-990b-9fe1b2ee0886")); // Folly default because that's lowkey funny
+        return optional.orElse(FOLLY); // Folly default because that's lowkey funny
     }
 
     @Override

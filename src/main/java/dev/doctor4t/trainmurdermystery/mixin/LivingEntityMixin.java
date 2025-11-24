@@ -37,6 +37,7 @@ public abstract class LivingEntityMixin extends EntityMixin {
         if (attributeInstance == null) {
             return;
         }
+
         boolean alreadyHasModifier = attributeInstance.hasModifier(modifier.id());
         if (addOrKeep && !alreadyHasModifier) {
             attributeInstance.addPersistentModifier(modifier);

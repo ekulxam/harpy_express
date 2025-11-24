@@ -4,7 +4,26 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 
 import java.util.concurrent.CopyOnWriteArrayList;
 
-public class Scheduler {
+/**
+ * @author BackupCup
+ */
+public final class Scheduler {
+
+    private static final CopyOnWriteArrayList<ScheduledTask> TASKS = new CopyOnWriteArrayList<>();
+
+    private Scheduler() {
+    }
+
+    public static void init() {
+        ServerTickEvents.END_SERVER_TICK.register(server -> TASKS.removeIf(ScheduledTask::tick));
+    }
+
+    public static ScheduledTask schedule(Runnable action, int delayTicks) {
+        ScheduledTask task = new ScheduledTask(delayTicks, action);
+        TASKS.add(task);
+        return task;
+    }
+
     public static class ScheduledTask {
         private int ticksLeft;
         private final Runnable action;
@@ -15,29 +34,25 @@ public class Scheduler {
             this.action = action;
         }
 
+        /**
+         * Ticks the current task
+         * @return whether the task should be removed
+         */
         public boolean tick() {
-            if (cancelled) return true;
-            if (--ticksLeft <= 0) {
-                action.run();
+            if (this.cancelled) {
                 return true;
             }
-            return false;
+
+            if (--ticksLeft > 0) {
+                return false;
+            }
+
+            action.run();
+            return true;
         }
 
         public void cancel() {
             this.cancelled = true;
         }
-    }
-
-    private static final CopyOnWriteArrayList<ScheduledTask> TASKS = new CopyOnWriteArrayList<>();
-
-    public static void init() {
-        ServerTickEvents.END_SERVER_TICK.register(server -> TASKS.removeIf(ScheduledTask::tick));
-    }
-
-    public static ScheduledTask schedule(Runnable action, int delayTicks) {
-        ScheduledTask task = new ScheduledTask(delayTicks, action);
-        TASKS.add(task);
-        return task;
     }
 }

@@ -21,6 +21,7 @@ public class PlayerInventoryMixin {
     private void invalid(double scrollAmount, @NotNull Operation<Void> original) {
         int oldSlot = this.player.getInventory().selectedSlot;
         original.call(scrollAmount);
+
         PlayerPsychoComponent component = PlayerPsychoComponent.KEY.get(this.player);
         if (component.getPsychoTicks() <= 0) {
             return;
@@ -31,6 +32,7 @@ public class PlayerInventoryMixin {
         if (this.player.getInventory().getStack(this.player.getInventory().selectedSlot).isOf(TMMItems.BAT)) {
             return;
         }
+
         this.player.getInventory().selectedSlot = oldSlot;
     }
 }

@@ -4,6 +4,7 @@ import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.mojang.datafixers.util.Either;
+import dev.doctor4t.trainmurdermystery.TMM;
 import dev.doctor4t.trainmurdermystery.api.Role;
 import dev.doctor4t.trainmurdermystery.cca.GameWorldComponent;
 import dev.doctor4t.trainmurdermystery.cca.PlayerMoodComponent;
@@ -109,12 +110,15 @@ public abstract class PlayerEntityMixin extends LivingEntity {
         if (world.isClient) return;
         String poisoner = stack.getOrDefault(TMMDataComponentTypes.POISONER, null);
         if (poisoner != null) {
-            int poisonTicks = PlayerPoisonComponent.KEY.get(this).poisonTicks;
-            if (poisonTicks == -1) {
-                PlayerPoisonComponent.KEY.get(this).setPoisonTicks(world.getRandom().nextBetween(PlayerPoisonComponent.clampTime.getLeft(), PlayerPoisonComponent.clampTime.getRight()), UUID.fromString(poisoner));
-            } else {
-                PlayerPoisonComponent.KEY.get(this).setPoisonTicks(MathHelper.clamp(poisonTicks - world.getRandom().nextBetween(100, 300), 0, PlayerPoisonComponent.clampTime.getRight()), UUID.fromString(poisoner));
+            UUID uuid;
+            try {
+                uuid = UUID.fromString(poisoner);
+            } catch (IllegalArgumentException e) {
+                TMM.LOGGER.error("Unable to read UUID from String {} when attempting to eat poisoned food!", poisoner, e);
+                uuid = null;
             }
+
+            PoisonUtils.updatePoisonTicks((PlayerEntity) (Object) this, uuid, world.getRandom());
         }
     }
 

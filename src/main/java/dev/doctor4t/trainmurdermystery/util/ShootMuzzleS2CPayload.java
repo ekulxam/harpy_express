@@ -1,6 +1,7 @@
 package dev.doctor4t.trainmurdermystery.util;
 
 import dev.doctor4t.trainmurdermystery.TMM;
+import dev.doctor4t.trainmurdermystery.client.util.MatrixParticleManager;
 import dev.doctor4t.trainmurdermystery.index.TMMParticles;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.MinecraftClient;

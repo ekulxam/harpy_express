@@ -9,6 +9,7 @@ import dev.doctor4t.trainmurdermystery.index.TMMDataComponentTypes;
 import dev.doctor4t.trainmurdermystery.index.TMMItems;
 import dev.doctor4t.trainmurdermystery.index.TMMSounds;
 import dev.doctor4t.trainmurdermystery.index.tag.TMMItemTags;
+import dev.doctor4t.trainmurdermystery.item.RevolverItem;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.entity.ItemEntity;
@@ -21,6 +22,8 @@ import net.minecraft.network.codec.PacketCodecs;
 import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundCategory;
+import net.minecraft.util.hit.EntityHitResult;
+import net.minecraft.util.hit.HitResult;
 import org.jetbrains.annotations.NotNull;
 
 public record GunShootPayload(int target) implements CustomPayload {
@@ -55,7 +58,20 @@ public record GunShootPayload(int target) implements CustomPayload {
                 if (!player.isCreative()) mainHandStack.set(TMMDataComponentTypes.USED, true);
             }
 
-            if (player.getServerWorld().getEntityById(payload.target()) instanceof PlayerEntity target && target.distanceTo(player) < 65.0) {
+            int targetId = payload.target();
+
+            // validation
+            if (mainHandStack.getItem() instanceof RevolverItem gun) {
+                // add 1f to account for possible desync
+                HitResult collision = RevolverItem.getGunTarget(player, gun.getRange(player, mainHandStack) + 1f);
+                if (collision instanceof EntityHitResult entityHitResult) {
+                    if (entityHitResult.getEntity().getId() != targetId) {
+                        return;
+                    }
+                }
+            }
+
+            if (player.getServerWorld().getEntityById(targetId) instanceof PlayerEntity target && target.distanceTo(player) < 65.0) {
                 GameWorldComponent game = GameWorldComponent.KEY.get(player.getWorld());
                 Item revolver = TMMItems.REVOLVER;
 

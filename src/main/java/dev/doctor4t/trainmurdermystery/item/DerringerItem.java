@@ -30,28 +30,8 @@ public class DerringerItem extends RevolverItem {
     }
 
     @Override
-    public TypedActionResult<ItemStack> use(@NotNull World world, @NotNull PlayerEntity user, Hand hand) {
-        ItemStack stack = user.getStackInHand(hand);
-        boolean used = stack.getOrDefault(TMMDataComponentTypes.USED, false);
-
-        if (world.isClient) {
-            HitResult collision = getGunTarget(user);
-            if (collision instanceof EntityHitResult entityHitResult) {
-                Entity target = entityHitResult.getEntity();
-                ClientPlayNetworking.send(new GunShootPayload(target.getId()));
-            } else {
-                ClientPlayNetworking.send(new GunShootPayload(-1));
-            }
-            if (!used) {
-                user.setPitch(user.getPitch() - 4);
-                spawnHandParticle();
-            }
-        }
-        return TypedActionResult.consume(stack);
-    }
-
-    public static void spawnHandParticle() {
-        HandParticle handParticle = new HandParticle()
+    public HandParticle createHandParticle() {
+        return new HandParticle()
                 .setTexture(TMM.id("textures/particle/gunshot.png"))
                 .setPos(0.1f, 0.2f, -0.2f)
                 .setMaxAge(3)
@@ -60,7 +40,11 @@ public class DerringerItem extends RevolverItem {
                 .setLight(15, 15)
                 .setAlpha(1f, 0.1f)
                 .setRenderLayer(TMMRenderLayers::additive);
-        TMMClient.handParticleManager.spawn(handParticle);
+    }
+
+    @Override
+    public boolean hasBeenUsed(ItemStack stack, PlayerEntity user) {
+        return stack.getOrDefault(TMMDataComponentTypes.USED, false);
     }
 
     @Override
@@ -73,7 +57,8 @@ public class DerringerItem extends RevolverItem {
         super.appendTooltip(stack, context, tooltip, type);
     }
 
-    public static HitResult getGunTarget(PlayerEntity user) {
-        return ProjectileUtil.getCollision(user, entity -> entity instanceof PlayerEntity player && GameFunctions.isPlayerAliveAndSurvival(player), 7f);
+    @Override
+    public float getRange(PlayerEntity user, ItemStack stack) {
+        return 7f;
     }
 }

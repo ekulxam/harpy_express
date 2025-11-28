@@ -29,7 +29,6 @@ public class CrosshairRenderer {
     private static final Identifier BAT_PROGRESS = TMM.id("hud/bat_progress");
     private static final Identifier BAT_BACKGROUND = TMM.id("hud/bat_background");
 
-
     public static void renderCrosshair(@NotNull MinecraftClient client, @NotNull ClientPlayerEntity player, DrawContext context, RenderTickCounter tickCounter) {
         if (!client.options.getPerspective().isFirstPerson()) return;
         boolean target = false;

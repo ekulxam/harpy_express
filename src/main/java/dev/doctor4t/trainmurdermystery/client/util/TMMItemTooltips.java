@@ -1,7 +1,9 @@
 package dev.doctor4t.trainmurdermystery.client.util;
 
 import dev.doctor4t.ratatouille.util.TextUtils;
+import dev.doctor4t.trainmurdermystery.index.TMMDataComponentTypes;
 import dev.doctor4t.trainmurdermystery.index.TMMItems;
+import dev.doctor4t.trainmurdermystery.item.DerringerItem;
 import net.fabricmc.fabric.api.client.item.v1.ItemTooltipCallback;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.player.ItemCooldownManager;
@@ -20,6 +22,13 @@ public class TMMItemTooltips {
 
     public static void addTooltips() {
         ItemTooltipCallback.EVENT.register((itemStack, tooltipContext, tooltipType, tooltipList) -> {
+            if (itemStack.getItem() instanceof DerringerItem) {
+                boolean used = itemStack.getOrDefault(TMMDataComponentTypes.USED, false);
+                if (used) {
+                    tooltipList.add(Text.translatable("tip.derringer.used").withColor(TMMItemTooltips.COOLDOWN_COLOR));
+                }
+            }
+
             addCooldownText(TMMItems.KNIFE, tooltipList, itemStack);
             addCooldownText(TMMItems.REVOLVER, tooltipList, itemStack);
             addCooldownText(TMMItems.DERRINGER, tooltipList, itemStack);

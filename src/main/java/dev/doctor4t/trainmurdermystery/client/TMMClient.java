@@ -16,6 +16,8 @@ import dev.doctor4t.trainmurdermystery.client.gui.RoundTextRenderer;
 import dev.doctor4t.trainmurdermystery.client.gui.StoreRenderer;
 import dev.doctor4t.trainmurdermystery.client.gui.TimeRenderer;
 import dev.doctor4t.trainmurdermystery.client.model.TMMModelLayers;
+import dev.doctor4t.trainmurdermystery.client.particle.HandParticle;
+import dev.doctor4t.trainmurdermystery.client.render.TMMRenderLayers;
 import dev.doctor4t.trainmurdermystery.client.render.block_entity.PlateBlockEntityRenderer;
 import dev.doctor4t.trainmurdermystery.client.render.block_entity.SmallDoorBlockEntityRenderer;
 import dev.doctor4t.trainmurdermystery.client.render.block_entity.WheelBlockEntityRenderer;
@@ -28,15 +30,18 @@ import dev.doctor4t.trainmurdermystery.entity.NoteEntity;
 import dev.doctor4t.trainmurdermystery.game.GameConstants;
 import dev.doctor4t.trainmurdermystery.game.GameFunctions;
 import dev.doctor4t.trainmurdermystery.index.*;
+import dev.doctor4t.trainmurdermystery.item.RevolverItem;
 import dev.doctor4t.trainmurdermystery.util.*;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.fabricmc.fabric.api.client.item.v1.ItemTooltipCallback;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.model.loading.v1.ModelLoadingPlugin;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
+import net.fabricmc.fabric.api.event.player.UseItemCallback;
 import net.minecraft.block.Block;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
@@ -55,14 +60,22 @@ import net.minecraft.client.util.ModelIdentifier;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
 import net.minecraft.registry.Registries;
 import net.minecraft.sound.SoundCategory;
+import net.minecraft.text.Text;
+import net.minecraft.util.ActionResult;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.TypedActionResult;
+import net.minecraft.util.hit.EntityHitResult;
+import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.*;
+import java.util.function.Supplier;
 
 public class TMMClient implements ClientModInitializer {
     private static float soundLevel = 0f;
@@ -74,6 +87,7 @@ public class TMMClient implements ClientModInitializer {
     public static PlayerMoodComponent moodComponent;
 
     public static final Map<UUID, PlayerListEntry> PLAYER_ENTRIES_CACHE = Maps.newHashMap();
+    public static final Map<Item, Supplier<HandParticle>> GUN_PARTICLE_PROVIDERS = Maps.newHashMap();
 
     public static KeyBinding instinctKeybind;
     public static float prevInstinctLightLevel = -.04f;
@@ -314,6 +328,56 @@ public class TMMClient implements ClientModInitializer {
                 GLFW.GLFW_KEY_LEFT_ALT,
                 "category." + TMM.MOD_ID + ".keybinds"
         ));
+
+        GUN_PARTICLE_PROVIDERS.put(TMMItems.DERRINGER,
+                () -> new HandParticle()
+                        .setTexture(TMM.id("textures/particle/gunshot.png"))
+                        .setPos(0.1f, 0.2f, -0.2f)
+                        .setMaxAge(3)
+                        .setSize(0.5f)
+                        .setVelocity(0f, 0f, 0f)
+                        .setLight(15, 15)
+                        .setAlpha(1f, 0.1f)
+                        .setRenderLayer(TMMRenderLayers::additive)
+        );
+
+        GUN_PARTICLE_PROVIDERS.put(TMMItems.REVOLVER,
+                () -> new HandParticle()
+                        .setTexture(TMM.id("textures/particle/gunshot.png"))
+                        .setPos(0.1f, 0.275f, -0.2f)
+                        .setMaxAge(3)
+                        .setSize(0.5f)
+                        .setVelocity(0f, 0f, 0f)
+                        .setLight(15, 15)
+                        .setAlpha(1f, 0.1f)
+                        .setRenderLayer(TMMRenderLayers::additive)
+        );
+
+        UseItemCallback.EVENT.register((user, world, hand) -> {
+            ItemStack stack = user.getStackInHand(hand);
+            if (!(stack.getItem() instanceof RevolverItem gun)) {
+                return TypedActionResult.pass(stack);
+            }
+
+            boolean used = gun.hasBeenUsed(stack, user);
+
+            if (world.isClient) {
+                HitResult collision = gun.getGunTarget(user, stack);
+                if (collision instanceof EntityHitResult entityHitResult) {
+                    Entity target = entityHitResult.getEntity();
+                    ClientPlayNetworking.send(new GunShootPayload(target.getId()));
+                } else {
+                    ClientPlayNetworking.send(new GunShootPayload(-1));
+                }
+                if (!used) {
+                    user.setPitch(user.getPitch() - 4);
+                    if (GUN_PARTICLE_PROVIDERS.containsKey(gun)) {
+                        handParticleManager.spawn(GUN_PARTICLE_PROVIDERS.get(gun).get());
+                    }
+                }
+            }
+            return TypedActionResult.consume(stack);
+        });
     }
 
     public static TrainWorldComponent getTrainComponent() {

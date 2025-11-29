@@ -243,7 +243,7 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
 
         this.backfireChance = nbtCompound.getFloat("BackfireChance");
 
-        for (Role role : TMMRoles.ROLES) {
+        for (Role role : TMMRoles.ROLES.values()) {
             this.setRoles(uuidListFromNbt(nbtCompound, role.identifier().toString()), role);
         }
 
@@ -275,7 +275,7 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
 
         nbtCompound.putFloat("BackfireChance", backfireChance);
 
-        for (Role role : TMMRoles.ROLES) {
+        for (Role role : TMMRoles.ROLES.values()) {
             nbtCompound.put(role.identifier().toString(), nbtFromUuidList(getAllWithRole(role)));
         }
 

@@ -64,15 +64,15 @@ public class ScoreboardRoleSelectorComponent implements AutoSyncedComponent {
             double vigilanteWeight = Math.exp(-vigilanteRounds * 4);
             double vigilantePercent = vigilanteWeight / vigilanteTotal * 100;
             text.append(
-                    Text.literal("\n  Killer (").withColor(RoleAnnouncementTexts.KILLER.colour)
+                    Text.literal("\n  Killer (").withColor(RoleAnnouncementTexts.KILLER.color)
                             .append(Text.literal("%d".formatted(killerRounds)).withColor(0x808080))
-                            .append(Text.literal("): ").withColor(RoleAnnouncementTexts.KILLER.colour))
+                            .append(Text.literal("): ").withColor(RoleAnnouncementTexts.KILLER.color))
                             .append(Text.literal("%.2f%%".formatted(killerPercent)).withColor(0x808080))
             );
             text.append(
-                    Text.literal("\n  Vigilante (").withColor(RoleAnnouncementTexts.VIGILANTE.colour)
+                    Text.literal("\n  Vigilante (").withColor(RoleAnnouncementTexts.VIGILANTE.color)
                             .append(Text.literal("%d".formatted(vigilanteRounds)).withColor(0x808080))
-                            .append(Text.literal("): ").withColor(RoleAnnouncementTexts.VIGILANTE.colour))
+                            .append(Text.literal("): ").withColor(RoleAnnouncementTexts.VIGILANTE.color))
                             .append(Text.literal("%.2f%%".formatted(vigilantePercent)).withColor(0x808080))
             );
         }

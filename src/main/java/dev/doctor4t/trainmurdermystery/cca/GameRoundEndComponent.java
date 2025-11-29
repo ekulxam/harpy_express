@@ -10,6 +10,7 @@ import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
 import org.ladysnake.cca.api.v3.component.ComponentKey;
@@ -37,16 +38,9 @@ public class GameRoundEndComponent implements AutoSyncedComponent {
     public void setRoundEndData(@NotNull List<ServerPlayerEntity> players, GameFunctions.WinStatus winStatus) {
         this.players.clear();
         for (ServerPlayerEntity player : players) {
-            RoleAnnouncementTexts.RoleAnnouncementText role = RoleAnnouncementTexts.BLANK;
             GameWorldComponent game = GameWorldComponent.KEY.get(this.world);
-            if (game.canUseKillerFeatures(player)) {
-                role = RoleAnnouncementTexts.KILLER;
-            } else if (game.isRole(player, TMMRoles.VIGILANTE)) {
-                role = RoleAnnouncementTexts.VIGILANTE;
-            } else {
-                role = RoleAnnouncementTexts.CIVILIAN;
-            }
-            this.players.add(new RoundEndData(player.getGameProfile(), role, !GameFunctions.isPlayerAliveAndSurvival(player)));
+            RoleAnnouncementTexts.RoleAnnouncementText text = RoleAnnouncementTexts.getFromRole(game.getRole(player));
+            this.players.add(new RoundEndData(player.getGameProfile(), text, !GameFunctions.isPlayerAliveAndSurvival(player)));
         }
         this.winStatus = winStatus;
         this.sync();
@@ -84,20 +78,25 @@ public class GameRoundEndComponent implements AutoSyncedComponent {
     @Override
     public void readFromNbt(@NotNull NbtCompound tag, RegistryWrapper.WrapperLookup registryLookup) {
         this.players.clear();
-        for (NbtElement element : tag.getList("players", 10)) this.players.add(new RoundEndData((NbtCompound) element));
+        for (NbtElement element : tag.getList("players", 10)) {
+            RoundEndData roundEndData = new RoundEndData((NbtCompound) element);
+            if (roundEndData.role != null) {
+                this.players.add(roundEndData);
+            }
+        }
         this.winStatus = GameFunctions.WinStatus.values()[tag.getInt("winstatus")];
     }
 
     public record RoundEndData(GameProfile player, RoleAnnouncementTexts.RoleAnnouncementText role, boolean wasDead) {
         public RoundEndData(@NotNull NbtCompound tag) {
-            this(new GameProfile(tag.getUuid("uuid"), tag.getString("name")), RoleAnnouncementTexts.ROLE_ANNOUNCEMENT_TEXTS.get(tag.getInt("role")), tag.getBoolean("wasDead"));
+            this(new GameProfile(tag.getUuid("uuid"), tag.getString("name")), RoleAnnouncementTexts.ID_TO_TEXT.get(Identifier.tryParse(tag.getString("roleText"))), tag.getBoolean("wasDead"));
         }
 
         public @NotNull NbtCompound writeToNbt() {
             NbtCompound tag = new NbtCompound();
             tag.putUuid("uuid", this.player.getId());
             tag.putString("name", this.player.getName());
-            tag.putInt("role", RoleAnnouncementTexts.ROLE_ANNOUNCEMENT_TEXTS.indexOf(this.role));
+            tag.putString("roleText", this.role.getId().toString());
             tag.putBoolean("wasDead", this.wasDead);
             return tag;
         }

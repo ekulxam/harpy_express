@@ -227,7 +227,7 @@ public class PlayerMoodComponent implements AutoSyncedComponent, ServerTickingCo
             for (NbtElement element : tag.getList("tasks", NbtElement.COMPOUND_TYPE)) {
                 if (element instanceof NbtCompound compound && compound.contains("id")) {
                     Identifier.CODEC.parse(registryLookup.getOps(NbtOps.INSTANCE), compound.get("id"))
-                            .resultOrPartial(error -> TMM.LOGGER.error("Tried to load an invalid itemstack: '{}'", error))
+                            .resultOrPartial(error -> TMM.LOGGER.error("Tried to load an invalid TaskType: '{}'", error))
                             .ifPresent(id -> {
                                     TaskType type = TaskType.TYPES.get(id);
                                     if (type == null) {
